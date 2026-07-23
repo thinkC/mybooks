@@ -1,0 +1,8 @@
+.venv/
+venv/
+# jupyter-book build artifacts
+_build/
+
+# python cache
+__pycache__/
+.ipynb_checkpoints/

@@ -1,0 +1,73 @@
+# title: "MyReaadUp"
+# description: "A personal library and book review site"
+# baseurl: ""
+# url: "https://example.com"
+
+# theme: minima
+# plugins:
+#   - jekyll-feed
+#   - jekyll-seo-tag
+
+# markdown: kramdown
+# kramdown:
+#   input: GFM
+#   hard_wrap: false
+
+# permalink: /:categories/:title/
+
+# collections:
+#   books:
+#     output: true
+#     permalink: /books/:title/
+
+# defaults:
+#   - scope:
+#       path: ""
+#       type: "books"
+#     values:
+#       layout: "book"
+
+# exclude:
+#   - Gemfile
+#   - Gemfile.lock
+#   - node_modules
+#   - vendor
+
+# author:
+#   name: "Your Name"
+#   email: "you@example.com"
+
+# logo: "/assets/images/logo.png"
+
+title: "MyReaadUp"
+author: "Tunde Oyewo"
+
+exclude_patterns:
+  [
+    ".venv",
+    ".ipynb_checkpoints",
+    "_build",
+    "Thumbs.db",
+    ".DS_Store",
+    "lib",
+    "bin",
+    "include",
+  ]
+
+parse:
+  myst_enable_extensions:
+    - colon_fence
+
+html:
+  use_repository_button: false
+  use_issues_button: false
+  use_download_button: true
+  number_sections: false
+  home_page_in_toc: true
+
+execute:
+  execute_notebooks: off
+
+sphinx:
+  extra_extensions:
+    - sphinxcontrib.mermaid
