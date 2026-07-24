@@ -100,7 +100,7 @@ Everything else in the diagrams checks out against source:
 
 ### Corrected component diagram
 
-```mermaid
+```{mermaid}
 flowchart TB
     subgraph cluster["Kubernetes Cluster"]
         subgraph userNS["User Namespace"]
