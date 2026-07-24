@@ -1,0 +1,952 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>LUKS CSI Driver — Architecture &amp; Module Review (Phases 2–3) &#8212; MyReaadUp</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'architecture-and-module-review';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="My Books" href="intro.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">MyReaadUp</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    My Books
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">LUKS CSI Driver — Architecture &amp; Module Review (Phases 2–3)</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/architecture-and-module-review.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>LUKS CSI Driver — Architecture & Module Review (Phases 2–3)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-2-architecture">Phase 2 — Architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#beginner-level-summary">Beginner-level summary</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#engineering-level-summary-diagram-drift">Engineering-level summary + diagram drift</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#corrected-component-diagram">Corrected component diagram</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#one-more-structural-detail-not-in-either-diagram">One more structural detail not in either diagram</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-3-module-by-module-walkthrough">Phase 3 — Module-by-module walkthrough</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#main-py-process-entry-point"><code class="docutils literal notranslate"><span class="pre">main.py</span></code> — process entry point</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#driver-py-csi-identity-service"><code class="docutils literal notranslate"><span class="pre">driver.py</span></code> — CSI Identity service</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#controller-py-csi-controller-service"><code class="docutils literal notranslate"><span class="pre">controller.py</span></code> — CSI Controller service</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#k8s-py-kubernetes-api-helpers"><code class="docutils literal notranslate"><span class="pre">k8s.py</span></code> — Kubernetes API helpers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#device-py-device-resolution-and-node-side-attachment"><code class="docutils literal notranslate"><span class="pre">device.py</span></code> — device resolution and node-side attachment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vault-py-vault-kv-v2-client"><code class="docutils literal notranslate"><span class="pre">vault.py</span></code> — Vault KV v2 client</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#luks-py-cryptsetup-mkfs-subprocess-wrappers"><code class="docutils literal notranslate"><span class="pre">luks.py</span></code> — cryptsetup/mkfs subprocess wrappers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#node-py-csi-node-service"><code class="docutils literal notranslate"><span class="pre">node.py</span></code> — CSI Node service</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-items-for-a-future-phase-not-acted-on-here">Open items for a future phase (not acted on here)</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="luks-csi-driver-architecture-module-review-phases-23">
+<h1>LUKS CSI Driver — Architecture &amp; Module Review (Phases 2–3)<a class="headerlink" href="#luks-csi-driver-architecture-module-review-phases-23" title="Permalink to this heading">#</a></h1>
+<p>Produced per <code class="docutils literal notranslate"><span class="pre">.claude/skills/csi-contribution/SKILL.md</span></code>, phases 2 (architecture
+explanation) and 3 (module-by-module walkthrough). Every claim below is
+labeled:</p>
+<ul class="simple">
+<li><p><strong>[VERIFIED]</strong> — read directly from the source file cited.</p></li>
+<li><p><strong>[DOC]</strong> — stated in <code class="docutils literal notranslate"><span class="pre">architecture.md</span></code> / <code class="docutils literal notranslate"><span class="pre">sequence.md</span></code> / <code class="docutils literal notranslate"><span class="pre">README.md</span></code>, not
+independently re-checked beyond what’s noted.</p></li>
+<li><p><strong>[DRIFT]</strong> — the doc and the code disagree; flagged explicitly rather than
+silently reconciled.</p></li>
+<li><p><strong>[INFERENCE]</strong> — my reading of intent from code structure, not a direct
+quote.</p></li>
+</ul>
+<p>Files verified: <code class="docutils literal notranslate"><span class="pre">main.py</span></code>, <code class="docutils literal notranslate"><span class="pre">driver.py</span></code>, <code class="docutils literal notranslate"><span class="pre">controller.py</span></code>, <code class="docutils literal notranslate"><span class="pre">k8s.py</span></code>,
+<code class="docutils literal notranslate"><span class="pre">device.py</span></code>, <code class="docutils literal notranslate"><span class="pre">vault.py</span></code>, <code class="docutils literal notranslate"><span class="pre">luks.py</span></code>, <code class="docutils literal notranslate"><span class="pre">node.py</span></code> (all under <code class="docutils literal notranslate"><span class="pre">luks_csi_driver/</span></code>,
+underscore package — see <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> directory gotcha).</p>
+<hr class="docutils" />
+<section id="phase-2-architecture">
+<h2>Phase 2 — Architecture<a class="headerlink" href="#phase-2-architecture" title="Permalink to this heading">#</a></h2>
+<section id="beginner-level-summary">
+<h3>Beginner-level summary<a class="headerlink" href="#beginner-level-summary" title="Permalink to this heading">#</a></h3>
+<p>A user creates a normal <code class="docutils literal notranslate"><span class="pre">PersistentVolumeClaim</span></code> with
+<code class="docutils literal notranslate"><span class="pre">storageClassName:</span> <span class="pre">luks-encrypted</span></code>. Two pieces of this driver cooperate to
+turn that into an encrypted volume:</p>
+<ol class="arabic simple">
+<li><p><strong>Controller</strong> (one Deployment, <code class="docutils literal notranslate"><span class="pre">CSI_MODE=controller</span></code>) runs when the PVC
+is created. It doesn’t allocate storage itself — it asks a <em>real</em> storage
+backend (Longhorn, Ceph, Cinder, EBS, …) for a raw block PVC, and
+generates an encryption key in Vault for this volume. <strong>[VERIFIED]</strong>
+(<code class="docutils literal notranslate"><span class="pre">controller.py::CreateVolume</span></code>)</p></li>
+<li><p><strong>Node</strong> (one DaemonSet pod per node, <code class="docutils literal notranslate"><span class="pre">CSI_MODE=node</span></code>, privileged) runs
+when kubelet schedules a pod that needs the volume. It gets the raw block
+device onto the node, fetches the key from Vault, runs <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code> to
+format/open it as LUKS, makes a filesystem, and mounts it.
+<strong>[VERIFIED]</strong> (<code class="docutils literal notranslate"><span class="pre">node.py::NodeStageVolume</span></code>)</p></li>
+</ol>
+<p>The user’s own pod is never privileged and never sees the encryption key —
+only the Node DaemonSet pod is privileged, and only it talks to Vault at
+mount time. <strong>[VERIFIED]</strong> (<code class="docutils literal notranslate"><span class="pre">node.py</span></code>, <code class="docutils literal notranslate"><span class="pre">vault.py</span></code>)</p>
+</section>
+<section id="engineering-level-summary-diagram-drift">
+<h3>Engineering-level summary + diagram drift<a class="headerlink" href="#engineering-level-summary-diagram-drift" title="Permalink to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">architecture.md</span></code> and <code class="docutils literal notranslate"><span class="pre">sequence.md</span></code> are broadly accurate for the
+control-plane path (PVC → controller → Vault → PV) and the LUKS format/open/
+mount path. One part is <strong>out of date</strong>:</p>
+<blockquote>
+<div><p><strong>[DRIFT]</strong> Both diagrams show <code class="docutils literal notranslate"><span class="pre">device.py</span></code> directly creating and deleting a
+<code class="docutils literal notranslate"><span class="pre">VolumeAttachment</span></code> object via the Kubernetes API to trigger the backing
+CSI driver’s <code class="docutils literal notranslate"><span class="pre">external-attacher</span></code>
+(<code class="docutils literal notranslate"><span class="pre">sequence.md</span></code> lines 37, 93–96; <code class="docutils literal notranslate"><span class="pre">architecture.md</span></code> line 56: <code class="docutils literal notranslate"><span class="pre">devPy</span> <span class="pre">--</span> <span class="pre">&quot;create</span> <span class="pre">/</span> <span class="pre">delete</span> <span class="pre">VolumeAttachment&quot;</span> <span class="pre">--&gt;</span> <span class="pre">kapi</span></code>).</p>
+<p>The actual code does <strong>not</strong> do this. <code class="docutils literal notranslate"><span class="pre">k8s.py</span></code> has no <code class="docutils literal notranslate"><span class="pre">VolumeAttachment</span></code>
+functions at all — verified by grep, no <code class="docutils literal notranslate"><span class="pre">create_volume_attachment</span></code> /
+<code class="docutils literal notranslate"><span class="pre">delete_volume_attachment</span></code> / <code class="docutils literal notranslate"><span class="pre">VolumeAttachment(</span></code> calls anywhere in
+<code class="docutils literal notranslate"><span class="pre">luks_csi_driver/</span></code>. <strong>[VERIFIED]</strong></p>
+<p>Instead, <code class="docutils literal notranslate"><span class="pre">device.py::ensure_staged()</span></code> (lines 244–335) creates a short-lived
+<strong>staging pod</strong> (<code class="docutils literal notranslate"><span class="pre">registry.k8s.io/pause:3.9</span></code>, <code class="docutils literal notranslate"><span class="pre">automount_service_account_token=False</span></code>)
+pinned to the target node via <code class="docutils literal notranslate"><span class="pre">node_name</span></code>, which mounts the <em>backing</em> PVC
+as a raw block device (<code class="docutils literal notranslate"><span class="pre">volume_devices</span></code> / <code class="docutils literal notranslate"><span class="pre">V1VolumeDevice</span></code>). This is what
+actually triggers kubelet’s normal CSI attach/stage machinery for the
+backing driver (e.g. <code class="docutils literal notranslate"><span class="pre">rbd</span> <span class="pre">map</span></code> for Ceph) — the module docstring in
+<code class="docutils literal notranslate"><span class="pre">device.py</span></code> (lines 8–17) explains this is a deliberate workaround: the
+backing PVC has no consuming pod of its own, so a pause pod stands in for
+one. <code class="docutils literal notranslate"><span class="pre">release_staged()</span></code> (lines 338–362) deletes that pod during
+<code class="docutils literal notranslate"><span class="pre">NodeUnstageVolume</span></code>, letting kubelet release the device the normal way.</p>
+<p>Interestingly, <code class="docutils literal notranslate"><span class="pre">node.py</span></code>’s own docstring (line 116–118) still describes the
+old design too (“via a VolumeAttachment for CSI drivers”) — so this is
+stale in both the diagrams <em>and</em> a code comment, not just external docs.
+Worth a follow-up doc fix; I have not changed anything, per CLAUDE.md
+(“show the planned diff and get confirmation” before implementing).</p>
+</div></blockquote>
+<p>Everything else in the diagrams checks out against source:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ep</span> <span class="pre">--&gt;</span> <span class="pre">ctrl</span> <span class="pre">--&gt;</span> <span class="pre">ctrlK8s</span> <span class="pre">&amp;</span> <span class="pre">ctrlVault</span></code> — <code class="docutils literal notranslate"><span class="pre">controller.py::CreateVolume</span></code> calls
+<code class="docutils literal notranslate"><span class="pre">k8s.create_pvc</span></code> / <code class="docutils literal notranslate"><span class="pre">k8s.wait_for_pvc_bound</span></code> then <code class="docutils literal notranslate"><span class="pre">vault_mod.ensure_secret</span></code>,
+in that order. <strong>[VERIFIED]</strong> (<code class="docutils literal notranslate"><span class="pre">controller.py</span></code> lines 88–94)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ctrl-&gt;&gt;Vault:</span> <span class="pre">ensure_secret(...)</span></code> idempotent — <code class="docutils literal notranslate"><span class="pre">vault.py::ensure_secret</span></code>
+tries a read first, only writes a new 64-hex-char key
+(<code class="docutils literal notranslate"><span class="pre">secrets.token_hex(32)</span></code>) on <code class="docutils literal notranslate"><span class="pre">hvac.exceptions.InvalidPath</span></code>. <strong>[VERIFIED]</strong>
+(<code class="docutils literal notranslate"><span class="pre">vault.py</span></code> lines 39–57)</p></li>
+<li><p>RESOLVERS order <code class="docutils literal notranslate"><span class="pre">Local</span> <span class="pre">→</span> <span class="pre">Longhorn</span> <span class="pre">→</span> <span class="pre">CephRBD</span> <span class="pre">→</span> <span class="pre">ByIdResolver</span></code> matches
+<code class="docutils literal notranslate"><span class="pre">device.py</span></code> lines 148–153 exactly. <strong>[VERIFIED]</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_for_device</span></code> polls every 3s up to 120s — matches <code class="docutils literal notranslate"><span class="pre">POLL_INTERVAL</span> <span class="pre">=</span> <span class="pre">3</span></code>,
+<code class="docutils literal notranslate"><span class="pre">DEVICE_TIMEOUT</span> <span class="pre">=</span> <span class="pre">120</span></code> constants and the loop at lines 230–241.
+<strong>[VERIFIED]</strong></p></li>
+<li><p>Key rotation flow (<code class="docutils literal notranslate"><span class="pre">luksAddKey</span></code> + <code class="docutils literal notranslate"><span class="pre">luksRemoveKey</span></code> before re-opening with the
+new key) matches <code class="docutils literal notranslate"><span class="pre">node.py::_open_with_rotation</span></code> lines 68–99 exactly,
+including the <code class="docutils literal notranslate"><span class="pre">ver</span> <span class="pre">&lt;</span> <span class="pre">2</span></code> guard against rotating on the first-ever version.
+<strong>[VERIFIED]</strong></p></li>
+<li><p>Teardown: <code class="docutils literal notranslate"><span class="pre">NodeUnstageVolume</span></code> unmounts (lazy fallback), calls
+<code class="docutils literal notranslate"><span class="pre">luks_close_robust</span></code>, then <code class="docutils literal notranslate"><span class="pre">device.release_staged</span></code> — matches <code class="docutils literal notranslate"><span class="pre">node.py</span></code>
+lines 181–206 and <code class="docutils literal notranslate"><span class="pre">luks.py::luks_close_robust</span></code> (dmsetup <code class="docutils literal notranslate"><span class="pre">--force</span></code> then
+<code class="docutils literal notranslate"><span class="pre">--deferred</span></code> fallback) lines 139–166. <strong>[VERIFIED]</strong></p></li>
+</ul>
+</section>
+<section id="corrected-component-diagram">
+<h3>Corrected component diagram<a class="headerlink" href="#corrected-component-diagram" title="Permalink to this heading">#</a></h3>
+<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>flowchart TB
+    subgraph cluster[&quot;Kubernetes Cluster&quot;]
+        subgraph userNS[&quot;User Namespace&quot;]
+            pod([&quot;User Pod&quot;])
+            upvc[&quot;User PVC&quot;]
+        end
+
+        subgraph ctrlPod[&quot;LUKS Controller Pod · kube-system&quot;]
+            ep[&quot;external-provisioner&quot;]
+            ctrl[&quot;controller.py&quot;]
+            ctrlK8s[&quot;k8s.py&quot;]
+            ctrlVault[&quot;vault.py&quot;]
+            ep --&gt; ctrl --&gt; ctrlK8s &amp; ctrlVault
+        end
+
+        subgraph nodePod[&quot;LUKS Node DaemonSet · per node · privileged&quot;]
+            registrar[&quot;node-driver-registrar&quot;]
+            nodeSvc[&quot;node.py&quot;]
+
+            subgraph devPy[&quot;device.py&quot;]
+                direction TB
+                stage[&quot;ensure_staged() / release_staged()\npause-pod trick to trigger\nkubelet&#39;s normal attach flow&quot;]
+                subgraph resolvers[&quot;RESOLVERS registry, tried in order&quot;]
+                    direction TB
+                    r1[&quot;1 · LocalResolver&quot;]
+                    r2[&quot;2 · LonghornResolver&quot;]
+                    r3[&quot;3 · CephRBDResolver&quot;]
+                    r4[&quot;4 · ByIdResolver (fallback)&quot;]
+                end
+                stage --&gt; resolvers
+            end
+
+            luksPy[&quot;luks.py&quot;]
+            nodeVault[&quot;vault.py&quot;]
+            nodeSvc --&gt; devPy &amp; luksPy &amp; nodeVault
+        end
+
+        kapi[(&quot;Kubernetes API&quot;)]
+        kubelet([&quot;kubelet&quot;])
+
+        subgraph backDrv[&quot;Backing CSI Driver&quot;]
+            backCtrl[&quot;Controller + external-attacher&quot;]
+            backNode[&quot;Node Plugin&quot;]
+            backCtrl --&gt; backNode
+        end
+
+        storage[(&quot;Backing Storage · Longhorn · Ceph · Cinder · EBS · local-path&quot;)]
+    end
+
+    vault[(&quot;HashiCorp Vault · KV v2&quot;)]
+
+    pod --&gt; upvc
+    upvc -- &quot;unbound PVC&quot; --&gt; ep
+    ctrlK8s &lt;-- &quot;PVC · PV · Events&quot; --&gt; kapi
+    ctrlVault &lt;-- &quot;ensure / read / delete key&quot; --&gt; vault
+
+    registrar -. &quot;register CSI socket&quot; .-&gt; kubelet
+    kubelet -- &quot;NodeStageVolume etc.&quot; --&gt; nodeSvc
+    stage -- &quot;create/delete pause pod\n(mounts backing PVC as block dev)&quot; --&gt; kapi
+    kapi -- &quot;kubelet schedules pause pod,\ntriggers normal CSI attach&quot; --&gt; backCtrl
+    backNode --&gt; storage
+    nodeVault &lt;-- &quot;read key · rotate&quot; --&gt; vault
+
+    classDef luks fill:#fff3e0,stroke:#e65100,color:#212121
+    classDef vaultStyle fill:#f3e5f5,stroke:#6a1b9a,color:#212121
+    classDef k8sStyle fill:#e3f2fd,stroke:#0d47a1,color:#212121
+    classDef backStyle fill:#e8f5e9,stroke:#1b5e20,color:#212121
+    classDef resolverStyle fill:#fafafa,stroke:#bdbdbd,color:#212121
+
+    class ep,ctrl,ctrlK8s,ctrlVault,registrar,nodeSvc,luksPy,nodeVault,stage luks
+    class r1,r2,r3,r4 resolverStyle
+    class vault vaultStyle
+    class kapi,kubelet k8sStyle
+    class backCtrl,backNode,storage backStyle
+</pre></div>
+</div>
+</section>
+<section id="one-more-structural-detail-not-in-either-diagram">
+<h3>One more structural detail not in either diagram<a class="headerlink" href="#one-more-structural-detail-not-in-either-diagram" title="Permalink to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">main.py::serve()</span></code> only starts the background <strong>Vault-sync thread</strong>
+(<code class="docutils literal notranslate"><span class="pre">_vault_sync_loop</span></code>, 30s default interval via <code class="docutils literal notranslate"><span class="pre">VAULT_SYNC_INTERVAL</span></code>) when
+<code class="docutils literal notranslate"><span class="pre">CSI_MODE</span></code> is <code class="docutils literal notranslate"><span class="pre">controller</span></code> or <code class="docutils literal notranslate"><span class="pre">all</span></code> — never in pure <code class="docutils literal notranslate"><span class="pre">node</span></code> mode.
+<strong>[VERIFIED]</strong> (<code class="docutils literal notranslate"><span class="pre">main.py</span></code> lines 117–121). This thread lists PVs labeled
+<code class="docutils literal notranslate"><span class="pre">csi-driver=luks.csi.example.com</span></code>, reads the current Vault key version for
+each, and patches the PV annotation
+<code class="docutils literal notranslate"><span class="pre">luks.csi.example.com/vault-version</span></code> — this is what lets an operator see
+rotation status via <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">describe</span> <span class="pre">pv</span></code> and is the mechanism the README’s
+comparison table calls “30s sync thread annotates PV” (line 507).
+<strong>[VERIFIED]</strong> — matches.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="phase-3-module-by-module-walkthrough">
+<h2>Phase 3 — Module-by-module walkthrough<a class="headerlink" href="#phase-3-module-by-module-walkthrough" title="Permalink to this heading">#</a></h2>
+<section id="main-py-process-entry-point">
+<h3><code class="docutils literal notranslate"><span class="pre">main.py</span></code> — process entry point<a class="headerlink" href="#main-py-process-entry-point" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Reads <code class="docutils literal notranslate"><span class="pre">CSI_ENDPOINT</span></code> (default <code class="docutils literal notranslate"><span class="pre">/csi/csi.sock</span></code>) and <code class="docutils literal notranslate"><span class="pre">CSI_MODE</span></code>
+(<code class="docutils literal notranslate"><span class="pre">controller</span></code> / <code class="docutils literal notranslate"><span class="pre">node</span></code> / <code class="docutils literal notranslate"><span class="pre">all</span></code>, default <code class="docutils literal notranslate"><span class="pre">all</span></code>) from env. <strong>[VERIFIED]</strong>
+(lines 142–148)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">IdentityServicer</span></code> is <em>always</em> registered regardless of mode; <code class="docutils literal notranslate"><span class="pre">Controller</span></code>
+and <code class="docutils literal notranslate"><span class="pre">Node</span></code> services are added conditionally. <strong>[VERIFIED]</strong> (lines
+114–124)</p></li>
+<li><p>Removes a stale Unix socket file before binding (<code class="docutils literal notranslate"><span class="pre">_cleanup_socket</span></code>), and
+registers <code class="docutils literal notranslate"><span class="pre">SIGTERM</span></code>/<code class="docutils literal notranslate"><span class="pre">SIGINT</span></code> handlers that call <code class="docutils literal notranslate"><span class="pre">server.stop(grace=5)</span></code>.
+<strong>[VERIFIED]</strong> (lines 42–47, 131–137)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_sync_vault_versions</span></code> swallows all exceptions per-PV and at the list level
+(<code class="docutils literal notranslate"><span class="pre">except</span> <span class="pre">Exception:</span> <span class="pre">...</span> <span class="pre">return</span></code> / <code class="docutils literal notranslate"><span class="pre">continue</span></code>) — a broken PV or a transient
+Vault auth failure never kills the sync loop. <strong>[VERIFIED]</strong> (lines 68–70,
+91–94)</p></li>
+</ul>
+</section>
+<section id="driver-py-csi-identity-service">
+<h3><code class="docutils literal notranslate"><span class="pre">driver.py</span></code> — CSI Identity service<a class="headerlink" href="#driver-py-csi-identity-service" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">GetPluginInfo</span></code> returns a hardcoded name/version:
+<code class="docutils literal notranslate"><span class="pre">luks.csi.example.com</span></code> / <code class="docutils literal notranslate"><span class="pre">0.1.0</span></code>. <strong>[VERIFIED]</strong> (lines 7–8) — the <code class="docutils literal notranslate"><span class="pre">.example.com</span></code>
+suffix is a placeholder domain, not a real one; worth knowing if this ever
+ships externally (also relevant to the “no LICENSE yet” note in
+<code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GetPluginCapabilities</span></code> advertises only <code class="docutils literal notranslate"><span class="pre">CONTROLLER_SERVICE</span></code>.
+<strong>[VERIFIED]</strong> (lines 18–29) — Node capabilities are advertised
+separately via <code class="docutils literal notranslate"><span class="pre">NodeServicer.NodeGetCapabilities</span></code> in <code class="docutils literal notranslate"><span class="pre">node.py</span></code>, which is
+the correct CSI pattern (Identity capabilities are plugin-level, Node
+capabilities are service-level), not a gap.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Probe</span></code> always returns success (<code class="docutils literal notranslate"><span class="pre">ProbeResponse()</span></code> with no <code class="docutils literal notranslate"><span class="pre">ready</span></code> field
+set) — no actual health check against Vault/K8s connectivity.
+<strong>[INFERENCE]</strong> — this is a liveness stub, not a real readiness probe.</p></li>
+</ul>
+</section>
+<section id="controller-py-csi-controller-service">
+<h3><code class="docutils literal notranslate"><span class="pre">controller.py</span></code> — CSI Controller service<a class="headerlink" href="#controller-py-csi-controller-service" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>StorageClass parameter keys are explicit constants at the top:
+<code class="docutils literal notranslate"><span class="pre">backingStorageClass</span></code> (required), <code class="docutils literal notranslate"><span class="pre">luksType</span></code> (default <code class="docutils literal notranslate"><span class="pre">luks2</span></code>),
+<code class="docutils literal notranslate"><span class="pre">filesystem</span></code> (default <code class="docutils literal notranslate"><span class="pre">ext4</span></code>), <code class="docutils literal notranslate"><span class="pre">backingNamespace</span></code>, <code class="docutils literal notranslate"><span class="pre">vaultMount</span></code> (default
+<code class="docutils literal notranslate"><span class="pre">secret</span></code>), <code class="docutils literal notranslate"><span class="pre">vaultPath</span></code> (default <code class="docutils literal notranslate"><span class="pre">tenants/default/luks-keys</span></code>),
+<code class="docutils literal notranslate"><span class="pre">deletionPolicy</span></code> (default <code class="docutils literal notranslate"><span class="pre">Delete</span></code>). <strong>[VERIFIED]</strong> (lines 31–37, 64–68)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CreateVolume</span></code> rejects requests missing <code class="docutils literal notranslate"><span class="pre">backingStorageClass</span></code> with
+<code class="docutils literal notranslate"><span class="pre">INVALID_ARGUMENT</span></code>. <strong>[VERIFIED]</strong> (lines 58–62)</p></li>
+<li><p>Namespace resolution order: explicit <code class="docutils literal notranslate"><span class="pre">backingNamespace</span></code> param → CSI’s
+standard <code class="docutils literal notranslate"><span class="pre">csi.storage.k8s.io/pvc-namespace</span></code> param → this pod’s own
+namespace (<code class="docutils literal notranslate"><span class="pre">k8s.get_operator_namespace()</span></code>). <strong>[VERIFIED]</strong> (lines 70–74)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">volume_id</span></code> returned to Kubernetes is literally <code class="docutils literal notranslate"><span class="pre">&quot;{namespace}/{pvc_name}&quot;</span></code>
+(line 80) — this is the string every other module downstream (<code class="docutils literal notranslate"><span class="pre">device.py</span></code>,
+<code class="docutils literal notranslate"><span class="pre">node.py</span></code>) parses back apart with <code class="docutils literal notranslate"><span class="pre">.split(&quot;/&quot;,</span> <span class="pre">1)</span></code>. That coupling is
+implicit — there’s no shared constant/helper for the format, just repeated
+string convention across <code class="docutils literal notranslate"><span class="pre">controller.py</span></code>, <code class="docutils literal notranslate"><span class="pre">device.py</span></code>
+(<code class="docutils literal notranslate"><span class="pre">_staging_pod_name</span></code>, <code class="docutils literal notranslate"><span class="pre">release_staged</span></code>), and <code class="docutils literal notranslate"><span class="pre">node.py</span></code>
+(<code class="docutils literal notranslate"><span class="pre">_mapper_name</span></code>). <strong>[INFERENCE]</strong> worth knowing if this format ever needs
+to change — it’s a de facto contract, not enforced by types.</p></li>
+<li><p>Vault key uses the <strong>CSI volume name</strong>, not the backing PVC name, as the
+identifier — the comment at lines 92–93 explains this is deliberately
+stable across PVC renames. <strong>[VERIFIED]</strong></p></li>
+<li><p>A Kubernetes <code class="docutils literal notranslate"><span class="pre">Normal</span></code>/<code class="docutils literal notranslate"><span class="pre">LuksKeyProvisioned</span></code> Event is only emitted if
+<code class="docutils literal notranslate"><span class="pre">csi.storage.k8s.io/pvc-name</span></code> is present in params (it’s a
+provisioner-injected param, so effectively always present in real
+clusters) — event name is deterministic
+(<code class="docutils literal notranslate"><span class="pre">f&quot;{name}.{reason.lower()}&quot;</span></code>) so provisioner retries don’t create
+duplicate events; a <code class="docutils literal notranslate"><span class="pre">409</span></code> on <code class="docutils literal notranslate"><span class="pre">create_namespaced_event</span></code> is swallowed.
+<strong>[VERIFIED]</strong> (<code class="docutils literal notranslate"><span class="pre">controller.py</span></code> lines 111–123, <code class="docutils literal notranslate"><span class="pre">k8s.py</span></code> lines 142–146)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DeleteVolume</span></code> reads the PV’s <code class="docutils literal notranslate"><span class="pre">volume_context</span></code> (via
+<code class="docutils literal notranslate"><span class="pre">k8s.get_pv_volume_attributes_by_pvc</span></code>) <strong>before</strong> deleting the backing
+PVC — necessary because once the PVC/PV is gone there’s no other place to
+recover <code class="docutils literal notranslate"><span class="pre">vaultMount</span></code>/<code class="docutils literal notranslate"><span class="pre">vaultPath</span></code>/<code class="docutils literal notranslate"><span class="pre">volumeName</span></code>/<code class="docutils literal notranslate"><span class="pre">deletionPolicy</span></code>.
+<strong>[VERIFIED]</strong> (lines 150–164) Vault key destruction only happens when
+<code class="docutils literal notranslate"><span class="pre">deletionPolicy</span> <span class="pre">==</span> <span class="pre">&quot;Delete&quot;</span></code> (the default); <code class="docutils literal notranslate"><span class="pre">Retain</span></code> skips it.
+<strong>[VERIFIED]</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ValidateVolumeCapabilities</span></code> only confirms <code class="docutils literal notranslate"><span class="pre">SINGLE_NODE_WRITER</span></code>
+(ReadWriteOnce) — matches README’s “CSI capabilities enforce RWO” claim.
+<strong>[VERIFIED]</strong> (lines 185–196)</p></li>
+</ul>
+</section>
+<section id="k8s-py-kubernetes-api-helpers">
+<h3><code class="docutils literal notranslate"><span class="pre">k8s.py</span></code> — Kubernetes API helpers<a class="headerlink" href="#k8s-py-kubernetes-api-helpers" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_api_client()</span></code> is <code class="docutils literal notranslate"><span class="pre">functools.lru_cache</span></code>d (singleton), tries
+<code class="docutils literal notranslate"><span class="pre">load_incluster_config()</span></code> first, falls back to <code class="docutils literal notranslate"><span class="pre">load_kube_config()</span></code> — so
+this also works for local <code class="docutils literal notranslate"><span class="pre">all</span></code>-mode testing off-cluster.
+<strong>[VERIFIED]</strong> (lines 27–34)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">create_pvc</span></code> builds a <strong>Block-mode</strong> PVC (<code class="docutils literal notranslate"><span class="pre">volume_mode=&quot;Block&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">access_modes=[&quot;ReadWriteOnce&quot;]</span></code>) — this is what makes the backing PVC a
+raw device rather than a filesystem mount, required for <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code> to
+operate directly on it. <strong>[VERIFIED]</strong> (lines 65–76)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wait_for_pvc_bound</span></code> polls every 3s, 120s default timeout, raises
+<code class="docutils literal notranslate"><span class="pre">TimeoutError</span></code> on expiry. <strong>[VERIFIED]</strong> (lines 80–91)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">emit_event</span></code> constructs a full <code class="docutils literal notranslate"><span class="pre">CoreV1Event</span></code> manually (not
+<code class="docutils literal notranslate"><span class="pre">client.CoreV1Api.create_namespaced_event</span></code> convenience wrapper around
+<code class="docutils literal notranslate"><span class="pre">EventsV1</span></code>) — uses the legacy <code class="docutils literal notranslate"><span class="pre">core/v1</span></code> Event API.
+<strong>[VERIFIED]</strong> (lines 110–146)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_pv_volume_attributes_by_pvc</span></code> returns <code class="docutils literal notranslate"><span class="pre">{}</span></code> (not an exception) on any
+404 along the PVC→PV chain — callers (<code class="docutils literal notranslate"><span class="pre">controller.py::DeleteVolume</span></code>)
+correctly <code class="docutils literal notranslate"><span class="pre">.get(...)</span></code>-with-default off the result rather than assuming
+keys exist. <strong>[VERIFIED]</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">secret_exists</span></code> and <code class="docutils literal notranslate"><span class="pre">read_secret_key</span></code> (lines 190–209) — <strong>[VERIFIED]</strong> no
+caller anywhere in <code class="docutils literal notranslate"><span class="pre">luks_csi_driver/</span></code> (checked via grep across all <code class="docutils literal notranslate"><span class="pre">.py</span></code>
+files). Likely leftover from an earlier design where the LUKS key came
+from a Kubernetes <code class="docutils literal notranslate"><span class="pre">Secret</span></code> instead of Vault (<code class="docutils literal notranslate"><span class="pre">test-resources.yaml</span></code> still
+references a <code class="docutils literal notranslate"><span class="pre">test-pvc-luks-key</span></code> Secret per the README’s Lima walkthrough,
+which may be what this was for). Flagging as probable dead code rather
+than assuming — worth confirming with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">log</span> <span class="pre">-p</span></code> before removing.</p></li>
+</ul>
+</section>
+<section id="device-py-device-resolution-and-node-side-attachment">
+<h3><code class="docutils literal notranslate"><span class="pre">device.py</span></code> — device resolution and node-side attachment<a class="headerlink" href="#device-py-device-resolution-and-node-side-attachment" title="Permalink to this heading">#</a></h3>
+<p>Already covered in detail under the architecture drift above. Summary of
+what’s actually verified:</p>
+<ul class="simple">
+<li><p>Two independent concerns per the module’s own docstring: (1) staging via
+pause pod, (2) device path resolution via <code class="docutils literal notranslate"><span class="pre">RESOLVERS</span></code>. <strong>[VERIFIED]</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Resolver</span></code> is an <code class="docutils literal notranslate"><span class="pre">ABC</span></code> with a single abstract <code class="docutils literal notranslate"><span class="pre">resolve(self,</span> <span class="pre">pv)</span> <span class="pre">-&gt;</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span></code> method — the extension point documented in the README
+(“subclass <code class="docutils literal notranslate"><span class="pre">Resolver</span></code>… insert into <code class="docutils literal notranslate"><span class="pre">RESOLVERS</span></code> before <code class="docutils literal notranslate"><span class="pre">ByIdResolver</span></code>”)
+matches the actual class hierarchy and the <code class="docutils literal notranslate"><span class="pre">RESOLVERS.insert(...)</span></code> pattern
+shown in the module docstring (lines 27–39). <strong>[VERIFIED]</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CephRBDResolver</span></code> explicitly does <strong>not</strong> rely on <code class="docutils literal notranslate"><span class="pre">/dev/rbd/&lt;pool&gt;/&lt;image&gt;</span></code>
+udev symlinks — it scans <code class="docutils literal notranslate"><span class="pre">/sys/bus/rbd/devices/*/pool</span></code> and <code class="docutils literal notranslate"><span class="pre">*/name</span></code>
+directly, because (per the class docstring, lines 99–107) those symlinks
+require <code class="docutils literal notranslate"><span class="pre">ceph-common</span></code> udev rules not present on a bare k3s node with just
+the kernel module. This is a <strong>deliberate divergence from what the
+README’s table implies</strong> (<code class="docutils literal notranslate"><span class="pre">/dev/rbd/&lt;pool&gt;/&lt;image&gt;</span></code>) — the <em>logical</em> path
+the README documents and the <em>actual sysfs-scan mechanism</em> the code uses
+to find it are different things; the README isn’t wrong, just describing
+the result, not the mechanism. <strong>[VERIFIED]</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ByIdResolver</span></code> strips hyphens on both the volume handle and the by-id
+entry name before substring-matching, to handle drivers (Cinder) that
+truncate handles in the symlink name. <strong>[VERIFIED]</strong> (lines 121–139,
+189–205)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_staging_pod_name</span></code> falls back to a SHA-256-derived 16-char suffix if the
+natural name exceeds the 63-char DNS label limit — this is the same
+63-char defensive pattern used in <code class="docutils literal notranslate"><span class="pre">_backing_pvc_name</span></code>
+(<code class="docutils literal notranslate"><span class="pre">controller.py</span></code>) and <code class="docutils literal notranslate"><span class="pre">_mapper_name</span></code> (<code class="docutils literal notranslate"><span class="pre">node.py</span></code>), applied independently in
+each module. <strong>[VERIFIED]</strong> (lines 208–214)</p></li>
+<li><p>The staging pod sets <code class="docutils literal notranslate"><span class="pre">automount_service_account_token=False</span></code> — reasonable
+hardening since this pod (running <code class="docutils literal notranslate"><span class="pre">pause</span></code>) has no need to talk to the API
+server. <strong>[VERIFIED]</strong> (line 287)</p></li>
+</ul>
+</section>
+<section id="vault-py-vault-kv-v2-client">
+<h3><code class="docutils literal notranslate"><span class="pre">vault.py</span></code> — Vault KV v2 client<a class="headerlink" href="#vault-py-vault-kv-v2-client" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>All four public functions (<code class="docutils literal notranslate"><span class="pre">ensure_secret</span></code>, <code class="docutils literal notranslate"><span class="pre">read_secret</span></code>,
+<code class="docutils literal notranslate"><span class="pre">current_version</span></code>, <code class="docutils literal notranslate"><span class="pre">delete_secret</span></code>) call <code class="docutils literal notranslate"><span class="pre">get_client()</span></code> independently —
+<strong>each call re-authenticates via Kubernetes auth from scratch</strong> (reads the
+SA JWT off disk, does a fresh <code class="docutils literal notranslate"><span class="pre">client.auth.kubernetes.login</span></code>). There is no
+token caching/reuse across calls within a single gRPC request, let alone
+across requests. <strong>[VERIFIED]</strong> (lines 30–36, and every function calls
+<code class="docutils literal notranslate"><span class="pre">get_client()</span></code> at its start) — this is a real perf/Vault-load
+consideration (extra login round-trip per Vault operation) but not
+something I’m characterizing as a bug without more context on request
+volume; flagging as observed behavior only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ensure_secret</span></code> generates keys with <code class="docutils literal notranslate"><span class="pre">secrets.token_hex(32)</span></code> — 32 random
+bytes represented as 64 hex chars, i.e. 256 bits of entropy from
+Python’s CSPRNG (<code class="docutils literal notranslate"><span class="pre">secrets</span></code> module, not <code class="docutils literal notranslate"><span class="pre">random</span></code>). <strong>[VERIFIED]</strong> (line
+12, line 51)</p></li>
+<li><p>Path construction is centralized in <code class="docutils literal notranslate"><span class="pre">_split_path</span></code> (mount, <code class="docutils literal notranslate"><span class="pre">f&quot;{path}/</span> <span class="pre">{volume_name}&quot;</span></code>) — used consistently by all four functions, so there’s a
+single source of truth for the Vault path shape, unlike the <code class="docutils literal notranslate"><span class="pre">volume_id</span></code>
+string-format convention noted above in <code class="docutils literal notranslate"><span class="pre">controller.py</span></code>. <strong>[VERIFIED]</strong>
+(lines 25–27)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">delete_secret</span></code> uses <code class="docutils literal notranslate"><span class="pre">delete_metadata_and_all_versions</span></code> (permanent,
+removes version history too, not a soft-delete) and silently no-ops on
+<code class="docutils literal notranslate"><span class="pre">InvalidPath</span></code> (already-gone key). <strong>[VERIFIED]</strong> (lines 85–99) — matches
+<code class="docutils literal notranslate"><span class="pre">controller.py</span></code>’s “destroy the Vault key (all versions)” docstring claim.</p></li>
+</ul>
+</section>
+<section id="luks-py-cryptsetup-mkfs-subprocess-wrappers">
+<h3><code class="docutils literal notranslate"><span class="pre">luks.py</span></code> — cryptsetup/mkfs subprocess wrappers<a class="headerlink" href="#luks-py-cryptsetup-mkfs-subprocess-wrappers" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_run()</span></code> is the shared subprocess wrapper: raises <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> with
+stderr on nonzero exit. <code class="docutils literal notranslate"><span class="pre">is_luks()</span></code> <strong>deliberately bypasses</strong> <code class="docutils literal notranslate"><span class="pre">_run()</span></code>
+(own docstring explains why: nonzero exit from <code class="docutils literal notranslate"><span class="pre">cryptsetup</span> <span class="pre">isLuks</span></code> means
+“not LUKS”, a normal outcome, not a fatal error to raise on).
+<strong>[VERIFIED]</strong> (lines 13–38)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luks_open</span></code> and <code class="docutils literal notranslate"><span class="pre">luks_close</span></code> are both idempotency-checked against
+<code class="docutils literal notranslate"><span class="pre">mapper_exists()</span></code> (i.e., <code class="docutils literal notranslate"><span class="pre">/dev/mapper/&lt;name&gt;</span></code> existence) before acting, so
+repeated <code class="docutils literal notranslate"><span class="pre">NodeStageVolume</span></code>/<code class="docutils literal notranslate"><span class="pre">NodeUnstageVolume</span></code> calls (retries) are safe.
+<strong>[VERIFIED]</strong> (lines 41–43, 61–83)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luks_add_key</span></code> writes the <strong>old</strong> key to a <code class="docutils literal notranslate"><span class="pre">tempfile.NamedTemporaryFile</span></code>
+(<code class="docutils literal notranslate"><span class="pre">delete=True</span></code>, auto-cleaned) and passes it via <code class="docutils literal notranslate"><span class="pre">--key-file</span></code>, while the
+<strong>new</strong> key goes over stdin — the comment explains this specifically
+keeps the old key off the process argv (visible via <code class="docutils literal notranslate"><span class="pre">/proc/*/cmdline</span></code> to
+anyone who can read it). <strong>[VERIFIED]</strong> (lines 98–120) — note the new key
+passed via stdin isn’t argv-visible either, so both keys avoid argv
+exposure; only the <em>old</em> key needed the temp-file treatment because
+<code class="docutils literal notranslate"><span class="pre">luksAddKey</span></code> takes exactly one file argument for the existing key and one
+stdin stream for the new one — that’s a <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code> CLI constraint, not
+an inconsistency in this code.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">luks_close_robust</span></code> mirrors what the docstring calls “the janitor job
+logic from the upstream kopf operator”: try plain <code class="docutils literal notranslate"><span class="pre">luksClose</span></code>, and on
+failure fall back to <code class="docutils literal notranslate"><span class="pre">dmsetup</span> <span class="pre">remove</span> <span class="pre">--force</span></code> then <code class="docutils literal notranslate"><span class="pre">--deferred</span></code> (both
+attempted, capturing but not checking their return codes).
+<strong>[VERIFIED]</strong> (lines 139–166) — matches the README’s operator-comparison
+table claim about rotation/cleanup mechanism parity.</p></li>
+</ul>
+</section>
+<section id="node-py-csi-node-service">
+<h3><code class="docutils literal notranslate"><span class="pre">node.py</span></code> — CSI Node service<a class="headerlink" href="#node-py-csi-node-service" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">_mapper_name</span></code> and the <code class="docutils literal notranslate"><span class="pre">volume_id</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;namespace/pvc-name&quot;</span></code> convention are
+independently re-derived here via <code class="docutils literal notranslate"><span class="pre">.replace(&quot;/&quot;,</span> <span class="pre">&quot;-&quot;)</span></code> — same pattern as
+<code class="docutils literal notranslate"><span class="pre">device.py::_staging_pod_name</span></code>, no shared helper. <strong>[VERIFIED]</strong> (line
+31–33) — consistent with the “implicit contract” observation under
+<code class="docutils literal notranslate"><span class="pre">controller.py</span></code> above.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_NODE_NAME</span></code> reads the <code class="docutils literal notranslate"><span class="pre">NODE_NAME</span></code> env var (expected to be injected via
+Kubernetes Downward API in the DaemonSet spec) and only falls back to
+<code class="docutils literal notranslate"><span class="pre">socket.gethostname()</span></code> for local/dev <code class="docutils literal notranslate"><span class="pre">all</span></code>-mode testing.
+<strong>[VERIFIED]</strong> (lines 26–28) — I have not independently checked the
+DaemonSet manifest/Helm template actually sets this env var; that’s a
+<strong>[DOC]</strong>-level claim from the code comment, worth confirming against
+<code class="docutils literal notranslate"><span class="pre">luks-csi-driver/templates/node.yaml</span></code> if pursued further.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NodeStageVolume</span></code> control flow, verified against source line-by-line:</p>
+<ol class="arabic simple">
+<li><p>Validates <code class="docutils literal notranslate"><span class="pre">volume_id</span></code> present. (127–129)</p></li>
+<li><p>Reads <code class="docutils literal notranslate"><span class="pre">vaultMount</span></code>/<code class="docutils literal notranslate"><span class="pre">vaultPath</span></code>/<code class="docutils literal notranslate"><span class="pre">volumeName</span></code>/<code class="docutils literal notranslate"><span class="pre">luksType</span></code>/<code class="docutils literal notranslate"><span class="pre">filesystem</span></code>
+from <code class="docutils literal notranslate"><span class="pre">volume_context</span></code> with the same defaults as <code class="docutils literal notranslate"><span class="pre">controller.py</span></code> sets
+them to (<code class="docutils literal notranslate"><span class="pre">secret</span></code>, luks2, ext4) — consistent between the two modules.
+(131–137)</p></li>
+<li><p>Calls <code class="docutils literal notranslate"><span class="pre">device.attach_and_resolve(...)</span></code> to get the raw block device
+path. (146–148)</p></li>
+<li><p>Fetches the <strong>current</strong> Vault key unconditionally (155) — even on the
+already-LUKS-formatted branch, where <code class="docutils literal notranslate"><span class="pre">_open_with_rotation</span></code> will fetch
+it <em>again</em> internally (line 78–79). <strong>[VERIFIED — minor redundancy]</strong>:
+<code class="docutils literal notranslate"><span class="pre">current_key</span></code> from line 155 is computed but never used on the
+already-formatted branch (only used in the <code class="docutils literal notranslate"><span class="pre">not</span> <span class="pre">luks.is_luks(...)</span></code>
+branch at lines 157–161); <code class="docutils literal notranslate"><span class="pre">_open_with_rotation</span></code> does its own
+independent <code class="docutils literal notranslate"><span class="pre">vault_mod.read_secret</span></code> call. Not a correctness bug (both
+reads return the same current key), just an extra Vault round-trip on
+every mount of an already-formatted device.</p></li>
+<li><p>First-use branch: <code class="docutils literal notranslate"><span class="pre">luks_format</span></code> → <code class="docutils literal notranslate"><span class="pre">luks_open</span></code> → <code class="docutils literal notranslate"><span class="pre">make_filesystem</span></code>.
+Already-formatted branch: <code class="docutils literal notranslate"><span class="pre">_open_with_rotation</span></code>. (157–164)</p></li>
+<li><p>Mounts <code class="docutils literal notranslate"><span class="pre">/dev/mapper/&lt;mapper&gt;</span></code> at the staging path if not already
+mounted. (166–171)</p></li>
+</ol>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_open_with_rotation</span></code> (lines 68–99): only attempts rotation if
+<code class="docutils literal notranslate"><span class="pre">luks_open</span></code> fails with <code class="docutils literal notranslate"><span class="pre">&quot;No</span> <span class="pre">key</span> <span class="pre">available&quot;</span></code> in the message <strong>and</strong>
+<code class="docutils literal notranslate"><span class="pre">ver</span> <span class="pre">&gt;=</span> <span class="pre">2</span></code> — i.e., it distinguishes “wrong key” from other failure modes
+and refuses to “rotate” when there’s no previous version to roll back
+from. <strong>[VERIFIED]</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NodePublishVolume</span></code>/<code class="docutils literal notranslate"><span class="pre">NodeUnpublishVolume</span></code> are straightforward bind-mounts;
+read-only is implemented as a <strong>second</strong> remount
+(<code class="docutils literal notranslate"><span class="pre">mount</span> <span class="pre">--bind</span></code> then <code class="docutils literal notranslate"><span class="pre">mount</span> <span class="pre">-o</span> <span class="pre">remount,ro,bind</span></code>) rather than a single
+<code class="docutils literal notranslate"><span class="pre">mount</span> <span class="pre">-o</span> <span class="pre">ro,bind</span></code> — this two-step is the documented way to make a bind
+mount read-only on Linux (a single-step <code class="docutils literal notranslate"><span class="pre">ro,bind</span></code> mount is silently
+ignored by the kernel). <strong>[VERIFIED as written; INFERENCE on the “why
+two steps” kernel behavior]</strong> (lines 220–230)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NodeGetCapabilities</span></code> advertises only <code class="docutils literal notranslate"><span class="pre">STAGE_UNSTAGE_VOLUME</span></code>.
+<strong>[VERIFIED]</strong> (lines 255–264) — consistent with there being a real
+staging path (separate from publish) in this driver, unlike drivers that
+only implement publish.</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="open-items-for-a-future-phase-not-acted-on-here">
+<h2>Open items for a future phase (not acted on here)<a class="headerlink" href="#open-items-for-a-future-phase-not-acted-on-here" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>[DRIFT]</strong> <code class="docutils literal notranslate"><span class="pre">architecture.md</span></code>, <code class="docutils literal notranslate"><span class="pre">sequence.md</span></code>, and <code class="docutils literal notranslate"><span class="pre">node.py</span></code>’s own
+docstring describe direct <code class="docutils literal notranslate"><span class="pre">VolumeAttachment</span></code> creation; the actual
+mechanism is the pause-pod staging trick in <code class="docutils literal notranslate"><span class="pre">device.py</span></code>. Diagrams above
+are corrected; the <code class="docutils literal notranslate"><span class="pre">.md</span></code> files and the <code class="docutils literal notranslate"><span class="pre">node.py</span></code> comment are not — that’s
+a documentation fix, not a code change, and should probably be a small
+standalone PR per <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>’s “small, single-purpose commits” rule.</p></li>
+<li><p>Possible dead code: <code class="docutils literal notranslate"><span class="pre">k8s.py::secret_exists</span></code> / <code class="docutils literal notranslate"><span class="pre">read_secret_key</span></code> — no
+callers found; recommend <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">log</span> <span class="pre">-p</span> <span class="pre">--</span> <span class="pre">luks_csi_driver/k8s.py</span></code> before
+removing, in case it’s used by an out-of-repo caller or a test not yet
+reviewed.</p></li>
+<li><p>Minor: <code class="docutils literal notranslate"><span class="pre">node.py::NodeStageVolume</span></code> fetches the current Vault key once
+unconditionally, then <code class="docutils literal notranslate"><span class="pre">_open_with_rotation</span></code> fetches it again on the
+already-formatted path — one extra Vault round-trip per mount, not
+incorrect, just worth knowing if Vault load ever becomes a concern.</p></li>
+</ol>
+<p>No files were modified as part of this review — this document is purely
+Phase 2/3 output per the skill’s workflow. Per <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>, any follow-up
+(fixing the diagram/docstring drift, removing dead code) should be proposed
+as a diff and confirmed before implementation.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="intro.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">My Books</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-2-architecture">Phase 2 — Architecture</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#beginner-level-summary">Beginner-level summary</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#engineering-level-summary-diagram-drift">Engineering-level summary + diagram drift</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#corrected-component-diagram">Corrected component diagram</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#one-more-structural-detail-not-in-either-diagram">One more structural detail not in either diagram</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phase-3-module-by-module-walkthrough">Phase 3 — Module-by-module walkthrough</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#main-py-process-entry-point"><code class="docutils literal notranslate"><span class="pre">main.py</span></code> — process entry point</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#driver-py-csi-identity-service"><code class="docutils literal notranslate"><span class="pre">driver.py</span></code> — CSI Identity service</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#controller-py-csi-controller-service"><code class="docutils literal notranslate"><span class="pre">controller.py</span></code> — CSI Controller service</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#k8s-py-kubernetes-api-helpers"><code class="docutils literal notranslate"><span class="pre">k8s.py</span></code> — Kubernetes API helpers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#device-py-device-resolution-and-node-side-attachment"><code class="docutils literal notranslate"><span class="pre">device.py</span></code> — device resolution and node-side attachment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#vault-py-vault-kv-v2-client"><code class="docutils literal notranslate"><span class="pre">vault.py</span></code> — Vault KV v2 client</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#luks-py-cryptsetup-mkfs-subprocess-wrappers"><code class="docutils literal notranslate"><span class="pre">luks.py</span></code> — cryptsetup/mkfs subprocess wrappers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#node-py-csi-node-service"><code class="docutils literal notranslate"><span class="pre">node.py</span></code> — CSI Node service</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-items-for-a-future-phase-not-acted-on-here">Open items for a future phase (not acted on here)</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Tunde Oyewo
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
