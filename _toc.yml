@@ -2,3 +2,4 @@ format: jb-book
 root: intro
 chapters:
   - file: architecture-and-module-review
+  - file: phase-2-architecture-expanded
