@@ -1,0 +1,567 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>README fix: Vault role name and service-account names &#8212; MyReadUp</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'readme-vault-role-fix';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="LUKS CSI Driver — Phase 4: Dev Environment Setup" href="phase-4-dev-environment-setup.html" />
+    <link rel="prev" title="LUKS CSI Driver — Phase 2: Architecture Explanation (Expanded)" href="phase-2-architecture-expanded.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">MyReadUp</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    My Books
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="architecture-and-module-review.html">LUKS CSI Driver — Architecture &amp; Module Review (Phases 2–3)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phase-2-architecture-expanded.html">LUKS CSI Driver — Phase 2: Architecture Explanation (Expanded)</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">README fix: Vault role name and service-account names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phase-4-dev-environment-setup.html">LUKS CSI Driver — Phase 4: Dev Environment Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phase-4-persistent-cluster-setup.html">Phase 4 (continued): Vault + driver setup against the persistent k3s cluster</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/readme-vault-role-fix.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>README fix: Vault role name and service-account names</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commit-1-a2e5ec5-role-name-luks-operator-role-luks-csi-role">Commit 1 — <code class="docutils literal notranslate"><span class="pre">a2e5ec5</span></code>: role name <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code> → <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commit-2-e351fcc-service-account-names-differ-by-deployment-path">Commit 2 — <code class="docutils literal notranslate"><span class="pre">e351fcc</span></code>: service-account names differ by deployment path</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#net-result">Net result</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="readme-fix-vault-role-name-and-service-account-names">
+<h1>README fix: Vault role name and service-account names<a class="headerlink" href="#readme-fix-vault-role-name-and-service-account-names" title="Permalink to this heading">#</a></h1>
+<p>Two commits on <code class="docutils literal notranslate"><span class="pre">main</span></code>, both touching only <code class="docutils literal notranslate"><span class="pre">README.md</span></code>’s “Vault prerequisites”
+section (steps 3–5). No driver code, manifests, or Helm chart changed.
+Written up per the discussion that led to them — see Phase 4 dev-environment
+notes (<code class="docutils literal notranslate"><span class="pre">phase-4-dev-environment-setup.md</span></code> §5) for how the underlying drift
+was originally found.</p>
+<hr class="docutils" />
+<section id="commit-1-a2e5ec5-role-name-luks-operator-role-luks-csi-role">
+<h2>Commit 1 — <code class="docutils literal notranslate"><span class="pre">a2e5ec5</span></code>: role name <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code> → <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code><a class="headerlink" href="#commit-1-a2e5ec5-role-name-luks-operator-role-luks-csi-role" title="Permalink to this heading">#</a></h2>
+<p><strong>Problem.</strong> <code class="docutils literal notranslate"><span class="pre">README.md</span></code> documented creating a Vault Kubernetes-auth role
+named <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>, and explicitly claimed <em>“The role name
+(<code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>) matches the default in
+<code class="docutils literal notranslate"><span class="pre">luks-csi-driver/values.yaml</span></code>.”</em> That claim was false: <code class="docutils literal notranslate"><span class="pre">values.yaml</span></code> line 39
+sets <code class="docutils literal notranslate"><span class="pre">vault.role:</span> <span class="pre">&quot;luks-csi-role&quot;</span></code>, and the Helm chart’s <code class="docutils literal notranslate"><span class="pre">VAULT_ROLE</span></code>
+container env var is templated straight from <code class="docutils literal notranslate"><span class="pre">.Values.vault.role</span></code>
+(<code class="docutils literal notranslate"><span class="pre">_helpers.tpl</span></code>’s <code class="docutils literal notranslate"><span class="pre">luks-csi-driver.vaultEnv</span></code>). Following the README exactly,
+then <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code>-ing with default values, would leave the
+controller/node pods authenticating against a Vault role
+(<code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code>) that was never created — Vault auth fails.</p>
+<p>The mismatch existed because the raw-manifest deployment path
+(<code class="docutils literal notranslate"><span class="pre">manifests/controller.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">manifests/node.yaml</span></code>) and <code class="docutils literal notranslate"><span class="pre">vault.py</span></code>’s own
+Python-level fallback both hardcode <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>, and the README
+was written to match that older/raw-manifest value rather than the Helm
+chart’s actual default.</p>
+<p><strong>Fix.</strong> Changed all four occurrences of <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code> to
+<code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code> in <code class="docutils literal notranslate"><span class="pre">README.md</span></code>:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">vault</span> <span class="pre">write</span> <span class="pre">auth/kubernetes/role/...</span></code> example command (step 3).</p></li>
+<li><p>The sentence claiming the role name matches <code class="docutils literal notranslate"><span class="pre">values.yaml</span></code>’s default (now
+actually true).</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">vault.role=&quot;...&quot;</span></code> line in the Quick Start Helm install example.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">vault.role</span></code> row in the values-to-customize table.</p></li>
+</ul>
+<p><strong>Not changed / left as a known gap.</strong> The raw-manifest path
+(<code class="docutils literal notranslate"><span class="pre">manifests/controller.yaml</span></code>/<code class="docutils literal notranslate"><span class="pre">node.yaml</span></code>) still hardcodes
+<code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>, and <code class="docutils literal notranslate"><span class="pre">vault.py</span></code>’s own default is still
+<code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>. Deploying via raw manifests with the Vault role now
+named <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code> (per this fix) would itself mismatch — the README’s
+Vault prerequisites section, as it now stands, is correct for the <strong>Helm</strong>
+path, not the raw-manifest path. This is the same class of problem
+addressed in commit 2 below for service-account names, but for the role
+name it hasn’t been resolved — worth a follow-up if the raw-manifest path
+still needs first-class README support.</p>
+</section>
+<hr class="docutils" />
+<section id="commit-2-e351fcc-service-account-names-differ-by-deployment-path">
+<h2>Commit 2 — <code class="docutils literal notranslate"><span class="pre">e351fcc</span></code>: service-account names differ by deployment path<a class="headerlink" href="#commit-2-e351fcc-service-account-names-differ-by-deployment-path" title="Permalink to this heading">#</a></h2>
+<p><strong>Problem, surfaced while reviewing commit 1.</strong> The same Vault-role example
+command bound the role to <code class="docutils literal notranslate"><span class="pre">bound_service_account_names=&quot;luks-csi-controller,luks-csi-node&quot;</span></code>
+— the <strong>raw-manifest</strong> service account names
+(<code class="docutils literal notranslate"><span class="pre">manifests/rbac.yaml</span></code>’s <code class="docutils literal notranslate"><span class="pre">ServiceAccount</span></code> objects are literally named
+<code class="docutils literal notranslate"><span class="pre">luks-csi-controller</span></code>/<code class="docutils literal notranslate"><span class="pre">luks-csi-node</span></code>). But the Helm chart computes SA names
+dynamically via <code class="docutils literal notranslate"><span class="pre">luks-csi-driver.fullname</span></code> in <code class="docutils literal notranslate"><span class="pre">_helpers.tpl</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fullname</span> <span class="o">=</span>
+  <span class="o">.</span><span class="n">Values</span><span class="o">.</span><span class="n">fullnameOverride</span><span class="p">,</span> <span class="k">if</span> <span class="nb">set</span>
+  <span class="k">else</span><span class="p">:</span> <span class="n">Release</span><span class="o">.</span><span class="n">Name</span><span class="p">,</span>                        <span class="k">if</span> <span class="n">Chart</span><span class="o">.</span><span class="n">Name</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">substring</span> <span class="n">of</span> <span class="n">Release</span><span class="o">.</span><span class="n">Name</span>
+  <span class="k">else</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{Release.Name}</span><span class="s2">-</span><span class="si">{Chart.Name}</span><span class="s2">&quot;</span>
+
+<span class="n">controllerServiceAccount</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{fullname}</span><span class="s2">-controller&quot;</span>
+<span class="n">nodeServiceAccount</span>        <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{fullname}</span><span class="s2">-node&quot;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Chart.Name</span></code> is <code class="docutils literal notranslate"><span class="pre">luks-csi-driver</span></code> (<code class="docutils literal notranslate"><span class="pre">Chart.yaml</span></code>), and <code class="docutils literal notranslate"><span class="pre">nameOverride</span></code>/
+<code class="docutils literal notranslate"><span class="pre">fullnameOverride</span></code> are both empty by default. The README’s own Quick Start
+example installs with <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span> <span class="pre">luks-csi-driver</span> <span class="pre">./luks-csi-driver/</span></code> —
+release name <code class="docutils literal notranslate"><span class="pre">luks-csi-driver</span></code> contains the chart name <code class="docutils literal notranslate"><span class="pre">luks-csi-driver</span></code> as
+a substring, so <code class="docutils literal notranslate"><span class="pre">fullname</span> <span class="pre">=</span> <span class="pre">Release.Name</span></code> unchanged, giving service account
+names <code class="docutils literal notranslate"><span class="pre">luks-csi-driver-controller</span></code> / <code class="docutils literal notranslate"><span class="pre">luks-csi-driver-node</span></code> — <strong>not</strong> the
+<code class="docutils literal notranslate"><span class="pre">luks-csi-controller</span></code>/<code class="docutils literal notranslate"><span class="pre">luks-csi-node</span></code> the Vault role command bound. A
+different release name changes the result again (chart name gets appended
+if not already a substring).</p>
+<p>Because the Vault prerequisites section is shared by both deployment
+paths (raw manifests and Helm) and the two paths produce different SA
+names, hardcoding either pair would just move the same bug from one path to
+the other — this was flagged and confirmed against <code class="docutils literal notranslate"><span class="pre">_helpers.tpl</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Chart.yaml</span></code> before making a choice.</p>
+<p><strong>Fix.</strong> Rewrote the prose to state both pairs explicitly, tied to how each
+name is derived, and replaced the hardcoded <code class="docutils literal notranslate"><span class="pre">bound_service_account_names</span></code>
+value with a placeholder plus inline comments pointing back to both pairs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use the pair matching your deployment method — see above:</span>
+<span class="c1">#   Helm (release name &quot;luks-csi-driver&quot;): luks-csi-driver-controller, luks-csi-driver-node</span>
+<span class="c1">#   Raw manifests (manifests/rbac.yaml):   luks-csi-controller, luks-csi-node</span>
+kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>vault-0<span class="w"> </span>--<span class="w"> </span>vault<span class="w"> </span>write<span class="w"> </span>auth/kubernetes/role/luks-csi-role<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">bound_service_account_names</span><span class="o">=</span><span class="s2">&quot;&lt;controller-sa-name&gt;,&lt;node-sa-name&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>...
+</pre></div>
+</div>
+<p>The prose above the command also now explains the Helm release-name
+substitution rule (<code class="docutils literal notranslate"><span class="pre">&lt;release-name&gt;-controller</span></code>/<code class="docutils literal notranslate"><span class="pre">-node</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">&lt;release-name&gt;-luks-csi-driver-controller</span></code>/<code class="docutils literal notranslate"><span class="pre">-node</span></code> if the release name
+doesn’t already contain <code class="docutils literal notranslate"><span class="pre">luks-csi-driver</span></code>), so a reader using a non-default
+release name isn’t left guessing.</p>
+</section>
+<hr class="docutils" />
+<section id="net-result">
+<h2>Net result<a class="headerlink" href="#net-result" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">README.md</span></code>’s Vault prerequisites section (steps 3–5) is now internally
+consistent and matches the Helm chart’s actual defaults
+(<code class="docutils literal notranslate"><span class="pre">luks-csi-driver/values.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">_helpers.tpl</span></code>) for a default-named Helm
+install. It no longer silently assumes raw-manifest naming while presenting
+Helm as the recommended path. The remaining known gap — the role name
+itself still doesn’t have first-class raw-manifest-path documentation after
+commit 1 — is called out above rather than silently left inconsistent.</p>
+<p>Both commits touch <code class="docutils literal notranslate"><span class="pre">README.md</span></code> only; no code, RBAC, or chart values changed.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="phase-2-architecture-expanded.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">LUKS CSI Driver — Phase 2: Architecture Explanation (Expanded)</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="phase-4-dev-environment-setup.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">LUKS CSI Driver — Phase 4: Dev Environment Setup</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commit-1-a2e5ec5-role-name-luks-operator-role-luks-csi-role">Commit 1 — <code class="docutils literal notranslate"><span class="pre">a2e5ec5</span></code>: role name <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code> → <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#commit-2-e351fcc-service-account-names-differ-by-deployment-path">Commit 2 — <code class="docutils literal notranslate"><span class="pre">e351fcc</span></code>: service-account names differ by deployment path</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#net-result">Net result</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Tunde Oyewo
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

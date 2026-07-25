@@ -1,0 +1,877 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>LUKS CSI Driver — Phase 4: Dev Environment Setup &#8212; MyReadUp</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" href="_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'phase-4-dev-environment-setup';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Phase 4 (continued): Vault + driver setup against the persistent k3s cluster" href="phase-4-persistent-cluster-setup.html" />
+    <link rel="prev" title="README fix: Vault role name and service-account names" href="readme-vault-role-fix.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="intro.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">MyReadUp</p>
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="intro.html">
+                    My Books
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="architecture-and-module-review.html">LUKS CSI Driver — Architecture &amp; Module Review (Phases 2–3)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phase-2-architecture-expanded.html">LUKS CSI Driver — Phase 2: Architecture Explanation (Expanded)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme-vault-role-fix.html">README fix: Vault role name and service-account names</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">LUKS CSI Driver — Phase 4: Dev Environment Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="phase-4-persistent-cluster-setup.html">Phase 4 (continued): Vault + driver setup against the persistent k3s cluster</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/phase-4-dev-environment-setup.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>LUKS CSI Driver — Phase 4: Dev Environment Setup</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#there-are-three-separate-dev-environment-flows-in-this-repo-pick-one">0. There are three separate “dev environment” flows in this repo — pick one</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-environment-uv">1. Python environment — <code class="docutils literal notranslate"><span class="pre">uv</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grpcio-tools-generating-the-csi-stubs">2. <code class="docutils literal notranslate"><span class="pre">grpcio-tools</span></code> — generating the CSI stubs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#k3s-three-concrete-paths-verified-per-script">3. k3s — three concrete paths, verified per-script</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-a-readme-s-minimal-lima-quick-start">Path A — README’s minimal Lima quick-start</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-b-testing-test-longhorn-sh">Path B — <code class="docutils literal notranslate"><span class="pre">testing/test-longhorn.sh</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-c-testing-test-ceph-sh-testing-lima-k3s-ceph-yaml">Path C — <code class="docutils literal notranslate"><span class="pre">testing/test-ceph.sh</span></code> + <code class="docutils literal notranslate"><span class="pre">testing/lima-k3s-ceph.yaml</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryptsetup">4. <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vault-and-the-openbao-gap">5. Vault (and the OpenBao gap)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-s-actually-scripted-and-working-a-vault-dev-mode-server">What’s actually scripted and working: a Vault <strong>dev-mode</strong> server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#drift-the-vault-role-name-in-step-6-does-not-match-the-readme">[DRIFT] — the Vault role name in step 6 does not match the README</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openbao-genuinely-in-progress-not-yet-a-distinct-dev-setup-path">OpenBao — genuinely in-progress, not yet a distinct dev-setup path</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-recommended-setup-sequence">Summary — recommended setup sequence</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-items-surfaced-in-this-pass">Open items surfaced in this pass</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="luks-csi-driver-phase-4-dev-environment-setup">
+<h1>LUKS CSI Driver — Phase 4: Dev Environment Setup<a class="headerlink" href="#luks-csi-driver-phase-4-dev-environment-setup" title="Permalink to this heading">#</a></h1>
+<p>Covers <code class="docutils literal notranslate"><span class="pre">.claude/skills/csi-contribution/SKILL.md</span></code> Phase 4: uv, grpcio-tools,
+k3s, cryptsetup, Vault/OpenBao. Labeling convention as in the Phase 2/3
+documents:</p>
+<ul class="simple">
+<li><p><strong>[VERIFIED]</strong> — read directly from the cited file.</p></li>
+<li><p><strong>[DOC]</strong> — stated in <code class="docutils literal notranslate"><span class="pre">README.md</span></code>/<code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>, not independently re-derived.</p></li>
+<li><p><strong>[DRIFT]</strong> — two sources in the repo disagree.</p></li>
+<li><p><strong>[INFERENCE]</strong> — my reading of intent, not a direct quote.</p></li>
+<li><p><strong>[GAP]</strong> — something <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> or the skill asks about that has no
+in-repo script/config backing it; flagged rather than invented.</p></li>
+</ul>
+<p>Files verified this pass: <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>, <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> (header only),
+<code class="docutils literal notranslate"><span class="pre">generate_proto.sh</span></code>, <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code>, <code class="docutils literal notranslate"><span class="pre">.github/workflows/build.yaml</span></code>,
+<code class="docutils literal notranslate"><span class="pre">testing/test-ceph.sh</span></code>, <code class="docutils literal notranslate"><span class="pre">testing/test-longhorn.sh</span></code>,
+<code class="docutils literal notranslate"><span class="pre">testing/lima-k3s-ceph.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">manifests/controller.yaml</span></code>,
+<code class="docutils literal notranslate"><span class="pre">manifests/node.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">luks-csi-driver/values.yaml</span></code>,
+<code class="docutils literal notranslate"><span class="pre">luks-csi-driver/templates/_helpers.tpl</span></code>, <code class="docutils literal notranslate"><span class="pre">luks_csi_driver/vault.py</span></code>,
+<code class="docutils literal notranslate"><span class="pre">README.md</span></code> (Vault prerequisites + Lima sections).</p>
+<hr class="docutils" />
+<section id="there-are-three-separate-dev-environment-flows-in-this-repo-pick-one">
+<h2>0. There are three separate “dev environment” flows in this repo — pick one<a class="headerlink" href="#there-are-three-separate-dev-environment-flows-in-this-repo-pick-one" title="Permalink to this heading">#</a></h2>
+<p><strong>[VERIFIED]</strong>, no single canonical setup — the repo documents/scripts three
+distinct paths, of increasing realism:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flow</p></th>
+<th class="head"><p>Where</p></th>
+<th class="head"><p>Backing storage</p></th>
+<th class="head"><p>Automation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>A. Minimal Lima quick-start</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">README.md</span></code> “Local development with Lima”</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">local-path</span></code> + a manual loop device</p></td>
+<td><p>Manual steps in README, no script</p></td>
+</tr>
+<tr class="row-odd"><td><p>B. Longhorn dev</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">testing/test-longhorn.sh</span></code></p></td>
+<td><p>Longhorn (CSI)</p></td>
+<td><p>Fully scripted, idempotent, <code class="docutils literal notranslate"><span class="pre">--teardown</span></code> supported</p></td>
+</tr>
+<tr class="row-even"><td><p>C. Ceph (Rook) dev</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">testing/test-ceph.sh</span></code> + <code class="docutils literal notranslate"><span class="pre">testing/lima-k3s-ceph.yaml</span></code></p></td>
+<td><p>Rook-Ceph RBD (CSI)</p></td>
+<td><p>Fully scripted, idempotent, <code class="docutils literal notranslate"><span class="pre">--teardown</span></code> supported</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>[GAP]</strong>: <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>’s Environment section describes a fourth thing — “Local
+cluster: k3s, 3 nodes (<code class="docutils literal notranslate"><span class="pre">csi-nfcs-k3s-controller</span></code> + 2 workers)” — a
+persistent, named, multi-node cluster. I found <strong>no script, Lima template,
+or manifest anywhere in this repo</strong> that provisions a cluster matching that
+description; all three flows above are single-node Lima VMs. If that 3-node
+cluster is what you’re actually developing against, its setup is either
+undocumented in-repo or lives outside this repository — worth confirming
+before assuming any command below targets it.</p>
+<p>Flows B and C are the ones that matter most for Phase 4, because they’re the
+only ones that actually exercise the parts of the driver most worth testing
+(the <code class="docutils literal notranslate"><span class="pre">device.py</span></code> CSI-backed staging-pod path from Phase 2 §8, and real key
+rotation) — flow A’s <code class="docutils literal notranslate"><span class="pre">local-path</span></code> backing skips <code class="docutils literal notranslate"><span class="pre">ensure_staged</span></code> entirely
+(Phase 2 §8), so it never touches that code path.</p>
+</section>
+<hr class="docutils" />
+<section id="python-environment-uv">
+<h2>1. Python environment — <code class="docutils literal notranslate"><span class="pre">uv</span></code><a class="headerlink" href="#python-environment-uv" title="Permalink to this heading">#</a></h2>
+<p><strong>[VERIFIED]</strong>, <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">requires-python</span> <span class="pre">=</span> <span class="pre">&quot;&gt;=3.12&quot;</span></code> (line 5). No <code class="docutils literal notranslate"><span class="pre">.python-version</span></code> file in the
+repo root — confirmed absent.</p></li>
+<li><p>Runtime deps: <code class="docutils literal notranslate"><span class="pre">grpcio&gt;=1.60.0</span></code>, <code class="docutils literal notranslate"><span class="pre">grpcio-tools&gt;=1.60.0</span></code>,
+<code class="docutils literal notranslate"><span class="pre">kubernetes&gt;=29.0.0</span></code>, <code class="docutils literal notranslate"><span class="pre">hvac&gt;=2.3.0</span></code> (lines 6–11). No dev-dependency group
+is defined in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> — no <code class="docutils literal notranslate"><span class="pre">[dependency-groups]</span></code> or
+<code class="docutils literal notranslate"><span class="pre">[tool.uv]</span></code> dev section present, so there’s currently no separate test/lint
+tooling declared (pytest, ruff, etc. are absent from the file). Per
+<code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>’s “never invent commands” rule, I’m not assuming a lint/test
+command exists beyond what Phase 5 will need to verify directly.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[project.scripts]</span></code>: <code class="docutils literal notranslate"><span class="pre">luks_csi_driver</span> <span class="pre">=</span> <span class="pre">&quot;luks_csi_driver.main:main&quot;</span></code> (line 14) — this is what makes <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">luks_csi_driver</span></code> (or the installed
+console script) equivalent to <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">luks_csi_driver.main</span></code>.</p></li>
+</ul>
+<p><strong>[VERIFIED]</strong> the Dockerfile’s own toolchain, useful as a reference for what
+“known good” looks like: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">uv==0.11.19</span></code>, then
+<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span> <span class="pre">--frozen</span> <span class="pre">--no-dev</span> <span class="pre">--no-install-project</span> <span class="pre">--no-editable</span> <span class="pre">--no-cache</span></code>
+before proto generation, and <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span> <span class="pre">--frozen</span> <span class="pre">--no-dev</span> <span class="pre">--no-editable</span> <span class="pre">--no-cache</span></code> again after (Dockerfile lines 14–24). Base image is
+<code class="docutils literal notranslate"><span class="pre">python:3.13.13-slim-trixie</span></code> (pinned by digest, line 2).</p>
+<p>Local setup, mirroring what the Dockerfile does but without <code class="docutils literal notranslate"><span class="pre">--frozen</span></code>’s
+strictness assumptions (which requires <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> to already match
+<code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> exactly — true right now since both are checked in):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>uv<span class="w">   </span><span class="c1"># or your platform&#39;s uv installer</span>
+uv<span class="w"> </span>sync
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span></code> (no <code class="docutils literal notranslate"><span class="pre">--no-dev</span></code>, no <code class="docutils literal notranslate"><span class="pre">--frozen</span></code>) is the standard “make me a working
+<code class="docutils literal notranslate"><span class="pre">.venv</span></code>” command for local iteration; I’m not asserting a specific uv
+version is required locally — the Dockerfile pins <code class="docutils literal notranslate"><span class="pre">0.11.19</span></code> for
+reproducible CI builds, but any reasonably current <code class="docutils literal notranslate"><span class="pre">uv</span></code> should resolve this
+lockfile. <strong>[INFERENCE]</strong> on that last point — not verified against multiple
+uv versions.</p>
+</section>
+<hr class="docutils" />
+<section id="grpcio-tools-generating-the-csi-stubs">
+<h2>2. <code class="docutils literal notranslate"><span class="pre">grpcio-tools</span></code> — generating the CSI stubs<a class="headerlink" href="#grpcio-tools-generating-the-csi-stubs" title="Permalink to this heading">#</a></h2>
+<p><strong>[VERIFIED]</strong>, <code class="docutils literal notranslate"><span class="pre">generate_proto.sh</span></code> (executable, root of repo):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>generate_proto.sh
+</pre></div>
+</div>
+<p>What it actually does (lines 1–33):</p>
+<ol class="arabic simple">
+<li><p>Runs <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">grpc_tools.protoc</span></code> against <code class="docutils literal notranslate"><span class="pre">proto/csi.proto</span></code>, writing
+<code class="docutils literal notranslate"><span class="pre">csi_pb2.py</span></code> and <code class="docutils literal notranslate"><span class="pre">csi_pb2_grpc.py</span></code> into <code class="docutils literal notranslate"><span class="pre">luks_csi_driver/generated/</span></code>.</p></li>
+<li><p><strong>Patches</strong> the generated <code class="docutils literal notranslate"><span class="pre">csi_pb2_grpc.py</span></code> in place: <code class="docutils literal notranslate"><span class="pre">grpc_tools</span></code>
+emits a bare <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">csi_pb2</span></code>, which only works if <code class="docutils literal notranslate"><span class="pre">generated/</span></code> is on
+<code class="docutils literal notranslate"><span class="pre">sys.path</span></code> directly. The script rewrites that to
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">luks_csi_driver.generated</span> <span class="pre">import</span> <span class="pre">csi_pb2</span></code> (lines 18–30) so it
+works as a proper package-relative import — this is why you can’t skip
+straight to running <code class="docutils literal notranslate"><span class="pre">protoc</span></code> yourself without also applying this rewrite.</p></li>
+<li><p>Touches <code class="docutils literal notranslate"><span class="pre">luks_csi_driver/generated/__init__.py</span></code> to make it a package.</p></li>
+</ol>
+<p><strong>[VERIFIED]</strong>: <code class="docutils literal notranslate"><span class="pre">luks_csi_driver/generated/</span></code> is not checked into git —
+confirmed via <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code> categorization is consistent with the README’s
+own claim (“The <code class="docutils literal notranslate"><span class="pre">generated/</span></code> directory is not included in the repository.
+Run this once after cloning”). This means <strong>every fresh clone requires
+running <code class="docutils literal notranslate"><span class="pre">generate_proto.sh</span></code> before <code class="docutils literal notranslate"><span class="pre">main.py</span></code> will import successfully</strong> —
+<code class="docutils literal notranslate"><span class="pre">main.py</span></code> line 21 does <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">luks_csi_driver.generated</span> <span class="pre">import</span> <span class="pre">csi_pb2_grpc</span></code>
+unconditionally.</p>
+<p>Run it with the project’s own <code class="docutils literal notranslate"><span class="pre">uv</span></code>-managed interpreter (so <code class="docutils literal notranslate"><span class="pre">grpc_tools</span></code> is
+guaranteed present) rather than a bare system <code class="docutils literal notranslate"><span class="pre">python</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>bash<span class="w"> </span>generate_proto.sh
+</pre></div>
+</div>
+<p>This exact invocation is what the Dockerfile itself uses (line 23) — not
+invented, copied directly from the build.</p>
+</section>
+<hr class="docutils" />
+<section id="k3s-three-concrete-paths-verified-per-script">
+<h2>3. k3s — three concrete paths, verified per-script<a class="headerlink" href="#k3s-three-concrete-paths-verified-per-script" title="Permalink to this heading">#</a></h2>
+<section id="path-a-readme-s-minimal-lima-quick-start">
+<h3>Path A — README’s minimal Lima quick-start<a class="headerlink" href="#path-a-readme-s-minimal-lima-quick-start" title="Permalink to this heading">#</a></h3>
+<p><strong>[VERIFIED against README lines 351–485]</strong>: <code class="docutils literal notranslate"><span class="pre">limactl</span> <span class="pre">create</span> <span class="pre">--name=k3s</span> <span class="pre">template://k3s</span></code> (Lima’s built-in k3s template, not a file in this repo),
+then a manual loop-device (<code class="docutils literal notranslate"><span class="pre">/tmp/test-block.img</span></code> → <code class="docutils literal notranslate"><span class="pre">/dev/loop0</span></code>) set up
+inside the VM, then <code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">apply</span> <span class="pre">-f</span> <span class="pre">manifests/{csidriver,rbac,</span> <span class="pre">storageclass,controller,node}.yaml</span></code>. <strong>Note</strong>: per Phase 2 §8’s finding,
+<code class="docutils literal notranslate"><span class="pre">manifests/rbac.yaml</span></code> is the RBAC file that’s out of sync with the code
+(grants <code class="docutils literal notranslate"><span class="pre">volumeattachments</span></code>, not <code class="docutils literal notranslate"><span class="pre">pods</span></code>) — but this exact path never
+surfaces the gap because <code class="docutils literal notranslate"><span class="pre">local-path</span></code>/loop-device PVs skip the staging-pod
+code entirely. If you deviate from this path (e.g. swap in a CSI-backed
+<code class="docutils literal notranslate"><span class="pre">backingStorageClass</span></code> while still using raw manifests), you’ll want the
+Helm chart’s RBAC instead, or to patch <code class="docutils literal notranslate"><span class="pre">manifests/rbac.yaml</span></code> first.</p>
+</section>
+<section id="path-b-testing-test-longhorn-sh">
+<h3>Path B — <code class="docutils literal notranslate"><span class="pre">testing/test-longhorn.sh</span></code><a class="headerlink" href="#path-b-testing-test-longhorn-sh" title="Permalink to this heading">#</a></h3>
+<p><strong>[VERIFIED]</strong>, reading the script directly (not the README’s description
+of it, which doesn’t cover Longhorn at all — this script’s coverage exists
+only in the script’s own header comment and body):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>testing/test-longhorn.sh<span class="w">                 </span><span class="c1"># full run</span>
+bash<span class="w"> </span>testing/test-longhorn.sh<span class="w"> </span>--skip-build<span class="w">     </span><span class="c1"># reuse existing image</span>
+bash<span class="w"> </span>testing/test-longhorn.sh<span class="w"> </span>--teardown<span class="w">       </span><span class="c1"># tear down everything it created</span>
+</pre></div>
+</div>
+<p>Prerequisites stated in the script’s own header (lines 1–12): Lima, a
+running Lima VM named exactly <code class="docutils literal notranslate"><span class="pre">k3s</span></code>, a running Lima VM named exactly
+<code class="docutils literal notranslate"><span class="pre">docker</span></code>, <code class="docutils literal notranslate"><span class="pre">helm</span></code> on the host. It does <strong>not</strong> stand up Vault externally —
+it deploys its own throwaway Vault dev server as part of the run (§5
+below).</p>
+<p>Steps the script actually performs, in order (verified against the code,
+not summarized from a comment): install <code class="docutils literal notranslate"><span class="pre">open-iscsi</span></code> in the VM (Longhorn’s
+own requirement, unrelated to this driver) → install Longhorn via Helm
+<em>inside</em> the Lima VM → deploy a Vault dev pod + configure Kubernetes auth →
+build and <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">save</span> <span class="pre">|</span> <span class="pre">ctr</span> <span class="pre">images</span> <span class="pre">import</span></code> the driver image → <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">upgrade</span> <span class="pre">--install</span></code> this driver’s chart with
+<code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">storageClass.backingStorageClass=longhorn</span></code> (grep-verified further in
+the file past what’s quoted above, consistent with the values.yaml default
+key name) → apply <code class="docutils literal notranslate"><span class="pre">testing/longhorn-test-resources.yaml</span></code> → wait for the PVC
+to bind and the test pod to run → assert file contents.</p>
+</section>
+<section id="path-c-testing-test-ceph-sh-testing-lima-k3s-ceph-yaml">
+<h3>Path C — <code class="docutils literal notranslate"><span class="pre">testing/test-ceph.sh</span></code> + <code class="docutils literal notranslate"><span class="pre">testing/lima-k3s-ceph.yaml</span></code><a class="headerlink" href="#path-c-testing-test-ceph-sh-testing-lima-k3s-ceph-yaml" title="Permalink to this heading">#</a></h3>
+<p><strong>[VERIFIED]</strong>. This one needs a <strong>separate, heavier</strong> Lima VM — not the
+same <code class="docutils literal notranslate"><span class="pre">k3s</span></code> VM Path B uses:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>limactl<span class="w"> </span>start<span class="w"> </span>testing/lima-k3s-ceph.yaml<span class="w"> </span>--name<span class="w"> </span>k3s-ceph<span class="w">   </span><span class="c1"># one-time</span>
+bash<span class="w"> </span>testing/test-ceph.sh
+bash<span class="w"> </span>testing/test-ceph.sh<span class="w"> </span>--skip-build<span class="w"> </span>--skip-ceph<span class="w"> </span>--skip-vault<span class="w">  </span><span class="c1"># fast re-run</span>
+bash<span class="w"> </span>testing/test-ceph.sh<span class="w"> </span>--teardown
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">testing/lima-k3s-ceph.yaml</span></code>’s own header (lines 1–23) explains why it’s a
+separate template: Rook-Ceph needs more CPU/RAM (<code class="docutils literal notranslate"><span class="pre">cpus:</span> <span class="pre">6</span></code>, <code class="docutils literal notranslate"><span class="pre">memory:</span> <span class="pre">12GiB</span></code>, <code class="docutils literal notranslate"><span class="pre">disk:</span> <span class="pre">60GiB</span></code>, lines 20–23) than a base k3s VM, plus a <strong>dedicated
+raw block device</strong> for the Ceph OSD — provisioned as a 20GiB sparse file
+attached via <code class="docutils literal notranslate"><span class="pre">losetup</span></code> as <code class="docutils literal notranslate"><span class="pre">/dev/loop10</span></code> (lines 65–80), specifically because
+Lima’s <code class="docutils literal notranslate"><span class="pre">additionalDisks</span></code> mechanism mounts disks as filesystems, which Rook
+can’t claim as raw block devices (comment, lines 6–8). k3s itself is started
+with <code class="docutils literal notranslate"><span class="pre">--https-listen-port</span> <span class="pre">6445</span></code> (not the default 6443) specifically so it
+can coexist with a Path B <code class="docutils literal notranslate"><span class="pre">k3s</span></code> VM running simultaneously on the same host
+(comment, line 43).</p>
+<p>Same downstream shape as Path B: Vault dev pod, image build+import, <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">upgrade</span> <span class="pre">--install</span> <span class="pre">...</span> <span class="pre">--set</span> <span class="pre">storageClass.backingStorageClass=rook-ceph-block</span></code> (verified in the
+StorageClass heredoc preceding the Vault step), test resources, assertion.</p>
+<p><strong>[INFERENCE]</strong>: Paths B and C are the two flows that genuinely exercise the
+CSI-backed device-resolution and staging-pod code (<code class="docutils literal notranslate"><span class="pre">LonghornResolver</span></code>,
+<code class="docutils literal notranslate"><span class="pre">CephRBDResolver</span></code>, <code class="docutils literal notranslate"><span class="pre">device.py::ensure_staged</span></code>) discussed in Phase 2 — worth
+using one of these, not Path A, if the thing being changed touches
+<code class="docutils literal notranslate"><span class="pre">device.py</span></code> or the RESOLVERS registry.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="cryptsetup">
+<h2>4. <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code><a class="headerlink" href="#cryptsetup" title="Permalink to this heading">#</a></h2>
+<p>Two separate, non-overlapping places <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code> needs to exist —
+conflating them is an easy mistake:</p>
+<p><strong>[VERIFIED]</strong> <strong>(a) Inside the driver’s own container image</strong> — this is
+what actually runs LUKS operations at request time. <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> installs it
+in the builder stage (<code class="docutils literal notranslate"><span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">...</span> <span class="pre">cryptsetup</span> <span class="pre">e2fsprogs</span> <span class="pre">xfsprogs</span> <span class="pre">util-linux</span></code>, line 6) and copies just the binary (plus <code class="docutils literal notranslate"><span class="pre">blkid</span></code>, <code class="docutils literal notranslate"><span class="pre">blockdev</span></code>,
+<code class="docutils literal notranslate"><span class="pre">dmsetup</span></code>, <code class="docutils literal notranslate"><span class="pre">mount</span></code>, <code class="docutils literal notranslate"><span class="pre">umount</span></code>, <code class="docutils literal notranslate"><span class="pre">mountpoint</span></code>, <code class="docutils literal notranslate"><span class="pre">mkfs.ext4</span></code>, <code class="docutils literal notranslate"><span class="pre">mkfs.xfs</span></code>) into the
+final <code class="docutils literal notranslate"><span class="pre">distroless/cc-debian13</span></code> image (lines 38–40) — a minimal-surface
+runtime with no shell or package manager, only the specific binaries
+<code class="docutils literal notranslate"><span class="pre">luks.py</span></code> shells out to. You never need <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code> on your own workstation
+to run the driver — only inside this image, which the <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> already
+handles.</p>
+<p><strong>[VERIFIED]</strong> <strong>(b) On the k3s VM/node itself</strong>, independent of (a) — the
+README’s own verification step at the end of the Lima walkthrough runs
+<code class="docutils literal notranslate"><span class="pre">limactl</span> <span class="pre">shell</span> <span class="pre">k3s</span> <span class="pre">--</span> <span class="pre">sudo</span> <span class="pre">cryptsetup</span> <span class="pre">status</span> <span class="pre">$(ls</span> <span class="pre">/dev/mapper/</span> <span class="pre">|</span> <span class="pre">grep</span> <span class="pre">^luks-</span> <span class="pre">|</span> <span class="pre">head</span> <span class="pre">-1)</span></code> (README lines 467–479) <em>directly on the VM</em>, not inside
+the driver’s container — this is a manual sanity check that the LUKS mapper
+the containerized driver created is visible and correctly typed from the
+host’s perspective, and it requires a <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code> binary on the VM itself.
+This is exactly why <code class="docutils literal notranslate"><span class="pre">testing/lima-k3s-ceph.yaml</span></code>’s provisioning script
+separately <code class="docutils literal notranslate"><span class="pre">apt-get</span> <span class="pre">install</span></code>s <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code> on the VM (lines 57–63, comment:
+“needed by our LUKS CSI driver on the node”) — confirmed this is the same
+concern, not a coincidence.</p>
+<p><code class="docutils literal notranslate"><span class="pre">node.yaml</span></code>/<code class="docutils literal notranslate"><span class="pre">values.yaml</span></code> also set <code class="docutils literal notranslate"><span class="pre">CRYPTSETUP_UDEV_SYNC_DISABLE=1</span></code>
+(<code class="docutils literal notranslate"><span class="pre">manifests/node.yaml</span></code> lines 33–35, and the Helm equivalent) — <strong>[VERIFIED]</strong>
+comment explains this disables cryptsetup’s udev synchronisation, “to
+prevent hangs in container environments where udev is not running.” Worth
+knowing if you ever see <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code> operations hang rather than fail
+cleanly in a stripped-down container/VM.</p>
+</section>
+<hr class="docutils" />
+<section id="vault-and-the-openbao-gap">
+<h2>5. Vault (and the OpenBao gap)<a class="headerlink" href="#vault-and-the-openbao-gap" title="Permalink to this heading">#</a></h2>
+<section id="what-s-actually-scripted-and-working-a-vault-dev-mode-server">
+<h3>What’s actually scripted and working: a Vault <strong>dev-mode</strong> server<a class="headerlink" href="#what-s-actually-scripted-and-working-a-vault-dev-mode-server" title="Permalink to this heading">#</a></h3>
+<p><strong>[VERIFIED]</strong>, identical block in both <code class="docutils literal notranslate"><span class="pre">test-longhorn.sh</span></code> (lines ~96–170)
+and <code class="docutils literal notranslate"><span class="pre">test-ceph.sh</span></code> (lines ~260–352) — not paraphrased, this is what the
+scripts literally do:</p>
+<ol class="arabic simple">
+<li><p>Create a dedicated <code class="docutils literal notranslate"><span class="pre">vault</span></code> ServiceAccount + a <strong>long-lived</strong> token
+Secret (<code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">kubernetes.io/service-account-token</span></code> annotated with
+<code class="docutils literal notranslate"><span class="pre">kubernetes.io/service-account.name:</span> <span class="pre">vault</span></code>) — the script’s own comment
+explains why: default projected SA tokens expire in ~1h and can’t serve
+as a stable <code class="docutils literal notranslate"><span class="pre">token_reviewer_jwt</span></code> for Vault’s Kubernetes auth config.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kubectl</span> <span class="pre">create</span> <span class="pre">clusterrolebinding</span> <span class="pre">vault-auth-delegator</span> <span class="pre">--clusterrole=system:auth-delegator</span> <span class="pre">--serviceaccount=default:vault</span></code> —
+required so Vault’s Kubernetes auth method can call the
+TokenReview API to validate JWTs presented by the controller/node pods.</p></li>
+<li><p>Deploy a single <strong><code class="docutils literal notranslate"><span class="pre">hashicorp/vault:1.15</span></code></strong> pod in <code class="docutils literal notranslate"><span class="pre">-dev</span></code> mode
+(<code class="docutils literal notranslate"><span class="pre">-dev-root-token-id=root</span> <span class="pre">-dev-listen-address=0.0.0.0:8200</span></code>) — dev mode
+auto-unseals and enables KV v2 at <code class="docutils literal notranslate"><span class="pre">secret/</span></code> by default, which is why
+there’s no separate “enable KV v2” step here (unlike the README’s
+production-oriented Vault prerequisites section, which does have one).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vault</span> <span class="pre">auth</span> <span class="pre">enable</span> <span class="pre">kubernetes</span></code>, <code class="docutils literal notranslate"><span class="pre">vault</span> <span class="pre">write</span> <span class="pre">auth/kubernetes/config</span> <span class="pre">kubernetes_host=...</span> <span class="pre">token_reviewer_jwt=&lt;the</span> <span class="pre">long-lived</span> <span class="pre">token&gt;</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vault</span> <span class="pre">policy</span> <span class="pre">write</span> <span class="pre">luks-policy</span> <span class="pre">-</span></code> — grants <code class="docutils literal notranslate"><span class="pre">create,read,update,delete,list</span></code>
+on <code class="docutils literal notranslate"><span class="pre">secret/data/tenants/*</span></code> and <code class="docutils literal notranslate"><span class="pre">read,list,delete</span></code> on
+<code class="docutils literal notranslate"><span class="pre">secret/metadata/tenants/*</span></code>. <strong>[VERIFIED — narrower than README’s
+documented policy]</strong>: the README’s Vault prerequisites section (lines
+194–215) additionally grants <code class="docutils literal notranslate"><span class="pre">list</span></code> on <code class="docutils literal notranslate"><span class="pre">secret/metadata/tenants</span></code> and
+<code class="docutils literal notranslate"><span class="pre">secret/metadata</span></code>, plus <code class="docutils literal notranslate"><span class="pre">read</span></code> on <code class="docutils literal notranslate"><span class="pre">sys/internal/ui/mounts/secret</span></code>; the
+test scripts’ inline policy omits all three. Not necessarily a bug — the
+driver’s own code (<code class="docutils literal notranslate"><span class="pre">vault.py</span></code>) never calls anything under
+<code class="docutils literal notranslate"><span class="pre">sys/internal/ui/mounts</span></code> or does a bare <code class="docutils literal notranslate"><span class="pre">list</span></code> at the <code class="docutils literal notranslate"><span class="pre">tenants</span></code>
+collection level, so the narrower policy appears sufficient for what the
+driver actually does — but it’s a real difference between the two
+documented policies, worth knowing if you copy one instead of the other.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vault</span> <span class="pre">write</span> <span class="pre">auth/kubernetes/role/luks-csi-role</span> <span class="pre">bound_service_account_names=luks-csi-driver-controller,luks-csi-driver-node</span> <span class="pre">bound_service_account_namespaces=kube-system</span> <span class="pre">policies=luks-policy</span> <span class="pre">ttl=24h</span></code>.</p></li>
+</ol>
+</section>
+<section id="drift-the-vault-role-name-in-step-6-does-not-match-the-readme">
+<h3>[DRIFT] — the Vault role name in step 6 does not match the README<a class="headerlink" href="#drift-the-vault-role-name-in-step-6-does-not-match-the-readme" title="Permalink to this heading">#</a></h3>
+<p>This is a concrete, verified mismatch worth fixing before it costs someone a
+debugging session:</p>
+<ul class="simple">
+<li><p>Test scripts (both) and <code class="docutils literal notranslate"><span class="pre">luks-csi-driver/values.yaml</span></code> line 39 use role
+name <strong><code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code></strong> — confirmed the Helm chart’s <code class="docutils literal notranslate"><span class="pre">VAULT_ROLE</span></code> env var
+comes directly from <code class="docutils literal notranslate"><span class="pre">.Values.vault.role</span></code>
+(<code class="docutils literal notranslate"><span class="pre">luks-csi-driver/templates/_helpers.tpl</span></code> lines 79–80), so a plain <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code> with defaults will have the controller/node pods authenticate
+against Vault role <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">README.md</span></code>’s “Vault prerequisites” section (lines 178–186) documents
+creating role <strong><code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code></strong>, and explicitly claims <em>“The role
+name (<code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>) matches the default in
+<code class="docutils literal notranslate"><span class="pre">luks-csi-driver/values.yaml</span></code>”</em> — <strong>this claim is currently false</strong>; the
+actual default in that file is <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code>, not <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">manifests/controller.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">manifests/node.yaml</span></code> (raw manifest path)
+hardcode <code class="docutils literal notranslate"><span class="pre">VAULT_ROLE</span> <span class="pre">value:</span> <span class="pre">&quot;luks-operator-role&quot;</span></code> in the container env —
+consistent with the README, <strong>inconsistent with the Helm chart’s
+default</strong>. <code class="docutils literal notranslate"><span class="pre">vault.py</span></code>’s own Python-level fallback
+(<code class="docutils literal notranslate"><span class="pre">os.environ.get(&quot;VAULT_ROLE&quot;,</span> <span class="pre">&quot;luks-operator-role&quot;)</span></code>, line 17) also
+defaults to <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>.</p></li>
+</ul>
+<p><strong>Net effect</strong>: the raw-manifest deployment path and the README’s
+documented Vault role name agree with each other (<code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>).
+The Helm chart’s default and the two working test scripts agree with each
+other (<code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code>). The two <em>groups</em> disagree. If you follow the
+README’s Vault setup steps verbatim and then <code class="docutils literal notranslate"><span class="pre">helm</span> <span class="pre">install</span></code> with default
+values, the controller/node pods will present <code class="docutils literal notranslate"><span class="pre">role=luks-csi-role</span></code> to Vault,
+which was never created — Vault auth will fail. <strong>[VERIFIED down to “these
+strings don’t match”; I have not reproduced the resulting Vault error
+message live, but the mismatch itself is unambiguous from source.]</strong> Fix is
+either: pass <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">vault.role=luks-operator-role</span></code> when using the README’s
+Vault setup with Helm, or create the Vault role as <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code> to match
+Helm’s actual default, or update the README. Not fixing this here per
+<code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> — flagging for a decision before any diff.</p>
+</section>
+<section id="openbao-genuinely-in-progress-not-yet-a-distinct-dev-setup-path">
+<h3>OpenBao — genuinely in-progress, not yet a distinct dev-setup path<a class="headerlink" href="#openbao-genuinely-in-progress-not-yet-a-distinct-dev-setup-path" title="Permalink to this heading">#</a></h3>
+<p><strong>[VERIFIED]</strong>: I grepped the entire repository (source, manifests, Helm
+chart, values, testing scripts, workflows) for <code class="docutils literal notranslate"><span class="pre">openbao</span></code>/<code class="docutils literal notranslate"><span class="pre">bao</span></code> — the only
+hits are in <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> itself and this skill’s own phase list. There is
+<strong>no OpenBao-specific test script, values flag, or documentation section</strong>
+anywhere in the repo yet.</p>
+<p>What <em>does</em> exist, per <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">log</span></code>, is groundwork that makes <code class="docutils literal notranslate"><span class="pre">vault.py</span></code>
+backend-agnostic rather than OpenBao-specific support per se:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">8dceb62</span></code> / <code class="docutils literal notranslate"><span class="pre">ba937a1</span></code> “fix: allow configuration of the kubernetes auth
+mount path” → <code class="docutils literal notranslate"><span class="pre">VAULT_AUTH_MOUNT</span></code> env var (<code class="docutils literal notranslate"><span class="pre">vault.py</span></code> line 19, default
+<code class="docutils literal notranslate"><span class="pre">&quot;kubernetes&quot;</span></code>), used in <code class="docutils literal notranslate"><span class="pre">get_client()</span></code>’s
+<code class="docutils literal notranslate"><span class="pre">client.auth.kubernetes.login(...,</span> <span class="pre">mount_point=VAULT_AUTH_MOUNT)</span></code> (line
+35).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">f3203ce</span></code> / <code class="docutils literal notranslate"><span class="pre">8c4514e</span></code> “fix: allow namespace support for openbao / vault” →
+<code class="docutils literal notranslate"><span class="pre">VAULT_NAMESPACE</span></code> env var (line 20), passed as <code class="docutils literal notranslate"><span class="pre">hvac.Client(url=...,</span> <span class="pre">namespace=VAULT_NAMESPACE</span> <span class="pre">or</span> <span class="pre">None)</span></code> (line 34).</p></li>
+</ul>
+<p><strong>[INFERENCE]</strong>: since OpenBao maintains an API-compatible surface with
+Vault’s KV v2 and Kubernetes auth endpoints, and <code class="docutils literal notranslate"><span class="pre">vault.py</span></code> talks to Vault
+purely through the generic <code class="docutils literal notranslate"><span class="pre">hvac</span></code> client rather than any Vault-specific
+SDK feature, pointing <code class="docutils literal notranslate"><span class="pre">VAULT_ADDR</span></code> at a running OpenBao instance and setting
+<code class="docutils literal notranslate"><span class="pre">VAULT_AUTH_MOUNT</span></code>/<code class="docutils literal notranslate"><span class="pre">VAULT_NAMESPACE</span></code> as needed <em>should</em> work — but this is
+an inference from how the client is used, not something I’ve run against a
+live OpenBao instance, and there is no OpenBao dev-server script analogous
+to the Vault ones in <code class="docutils literal notranslate"><span class="pre">testing/</span></code> to verify it against. If Phase 4 work
+requires an actual OpenBao dev loop, that script doesn’t exist yet and
+would need to be written (likely a near-copy of the Vault dev-pod block in
+<code class="docutils literal notranslate"><span class="pre">test-longhorn.sh</span></code>/<code class="docutils literal notranslate"><span class="pre">test-ceph.sh</span></code>, swapping the container image and init
+commands) — worth a design proposal (Phase 8 territory) rather than
+guessing at OpenBao’s dev-mode equivalent here.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="summary-recommended-setup-sequence">
+<h2>Summary — recommended setup sequence<a class="headerlink" href="#summary-recommended-setup-sequence" title="Permalink to this heading">#</a></h2>
+<p>For work that doesn’t touch <code class="docutils literal notranslate"><span class="pre">device.py</span></code>/resolvers (e.g. <code class="docutils literal notranslate"><span class="pre">vault.py</span></code>,
+<code class="docutils literal notranslate"><span class="pre">controller.py</span></code> provisioning logic):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync
+uv<span class="w"> </span>run<span class="w"> </span>bash<span class="w"> </span>generate_proto.sh
+<span class="c1"># README &quot;Local development with Lima&quot; path (A) is enough</span>
+</pre></div>
+</div>
+<p>For work touching device resolution, staging, or anything CSI-backed
+(<code class="docutils literal notranslate"><span class="pre">device.py</span></code>, RBAC, rotation under real Vault version bumps):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync
+uv<span class="w"> </span>run<span class="w"> </span>bash<span class="w"> </span>generate_proto.sh
+<span class="c1"># then Path B (testing/test-longhorn.sh) or Path C (testing/test-ceph.sh),</span>
+<span class="c1"># whichever backing driver is relevant to the change</span>
+</pre></div>
+</div>
+<p>Before relying on the README’s Vault prerequisites section together with a
+Helm install, resolve the <code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code> vs <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code> mismatch
+above — either override <code class="docutils literal notranslate"><span class="pre">--set</span> <span class="pre">vault.role=luks-operator-role</span></code> or align the
+Vault role name to <code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code>.</p>
+</section>
+<hr class="docutils" />
+<section id="open-items-surfaced-in-this-pass">
+<h2>Open items surfaced in this pass<a class="headerlink" href="#open-items-surfaced-in-this-pass" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>[DRIFT, new]</strong> — Vault role name: README (<code class="docutils literal notranslate"><span class="pre">luks-operator-role</span></code>) vs.
+Helm chart default + working test scripts (<code class="docutils literal notranslate"><span class="pre">luks-csi-role</span></code>). See §5.</p></li>
+<li><p><strong>[DRIFT, minor]</strong> — Vault policy in the test scripts is narrower than
+the README’s documented policy (missing two <code class="docutils literal notranslate"><span class="pre">list</span></code> grants and one
+<code class="docutils literal notranslate"><span class="pre">sys/internal/ui/mounts</span></code> read) — appears harmless given what <code class="docutils literal notranslate"><span class="pre">vault.py</span></code>
+actually calls, but the two documented policies aren’t identical.</p></li>
+<li><p><strong>[GAP]</strong> — <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code> references a persistent 3-node k3s cluster
+(<code class="docutils literal notranslate"><span class="pre">csi-nfcs-k3s-controller</span></code> + 2 workers) with no corresponding
+provisioning script/config found in-repo; all three documented dev flows
+are single-node Lima VMs.</p></li>
+<li><p><strong>[GAP]</strong> — No OpenBao dev-server script exists yet, unlike Vault’s two
+working dev-pod blocks in <code class="docutils literal notranslate"><span class="pre">testing/*.sh</span></code>. Backend-agnostic env vars
+(<code class="docutils literal notranslate"><span class="pre">VAULT_AUTH_MOUNT</span></code>, <code class="docutils literal notranslate"><span class="pre">VAULT_NAMESPACE</span></code>) are in place, but nothing in the
+repo has exercised them against a real OpenBao instance.</p></li>
+</ol>
+<p>No files were modified — Phase 4 output only, per <code class="docutils literal notranslate"><span class="pre">CLAUDE.md</span></code>.</p>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="readme-vault-role-fix.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">README fix: Vault role name and service-account names</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="phase-4-persistent-cluster-setup.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Phase 4 (continued): Vault + driver setup against the persistent k3s cluster</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#there-are-three-separate-dev-environment-flows-in-this-repo-pick-one">0. There are three separate “dev environment” flows in this repo — pick one</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-environment-uv">1. Python environment — <code class="docutils literal notranslate"><span class="pre">uv</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grpcio-tools-generating-the-csi-stubs">2. <code class="docutils literal notranslate"><span class="pre">grpcio-tools</span></code> — generating the CSI stubs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#k3s-three-concrete-paths-verified-per-script">3. k3s — three concrete paths, verified per-script</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-a-readme-s-minimal-lima-quick-start">Path A — README’s minimal Lima quick-start</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-b-testing-test-longhorn-sh">Path B — <code class="docutils literal notranslate"><span class="pre">testing/test-longhorn.sh</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#path-c-testing-test-ceph-sh-testing-lima-k3s-ceph-yaml">Path C — <code class="docutils literal notranslate"><span class="pre">testing/test-ceph.sh</span></code> + <code class="docutils literal notranslate"><span class="pre">testing/lima-k3s-ceph.yaml</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cryptsetup">4. <code class="docutils literal notranslate"><span class="pre">cryptsetup</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#vault-and-the-openbao-gap">5. Vault (and the OpenBao gap)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-s-actually-scripted-and-working-a-vault-dev-mode-server">What’s actually scripted and working: a Vault <strong>dev-mode</strong> server</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#drift-the-vault-role-name-in-step-6-does-not-match-the-readme">[DRIFT] — the Vault role name in step 6 does not match the README</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#openbao-genuinely-in-progress-not-yet-a-distinct-dev-setup-path">OpenBao — genuinely in-progress, not yet a distinct dev-setup path</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-recommended-setup-sequence">Summary — recommended setup sequence</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#open-items-surfaced-in-this-pass">Open items surfaced in this pass</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Tunde Oyewo
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
