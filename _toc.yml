@@ -3,3 +3,6 @@ root: intro
 chapters:
   - file: architecture-and-module-review
   - file: phase-2-architecture-expanded
+  - file: readme-vault-role-fix
+  - file: phase-4-dev-environment-setup
+  - file: phase-4-persistent-cluster-setup.md
